@@ -1130,11 +1130,15 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
           >
             <div className="followup-modal-header">
               <div className="modal-header-icon-wrap">
-                <Sparkles size={16} color="#38bdf8" />
+                <img
+                  src="/logo.png"
+                  alt="SatQuery AI Logo"
+                  style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: 4 }}
+                />
                 <span className="modal-header-title">Satellite Change Intelligence Assistant</span>
                 <span className="gemini-pill-badge" title="Powered by Google Gemini Generative Intelligence">
                   <Bot size={12} />
-                  <span>Gemini 1.5</span>
+                  <span>Gemini AI</span>
                 </span>
               </div>
               <div className="modal-header-actions">

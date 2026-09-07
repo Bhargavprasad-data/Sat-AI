@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { FC } from 'react';
 import {
   Home,
-  Layers,
   ChevronRight,
   MapPin,
   BarChart2,
@@ -56,8 +55,12 @@ export const Sidebar: FC<SidebarProps> = ({
           style={{ cursor: 'pointer' }}
           title="Return to Analysis Configuration Home"
         >
-          <div className="sidebar-logo-square">
-            <Layers size={20} color="#fff" />
+          <div className="sidebar-logo-square" style={{ padding: '2px', background: 'transparent' }}>
+            <img
+              src="/logo.png"
+              alt="SatQuery AI Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           </div>
 
           <div className="sidebar-brand-text">

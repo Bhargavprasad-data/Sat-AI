@@ -5,7 +5,6 @@ import {
   Download,
   ShieldCheck,
   Globe,
-  Layers,
   CheckCircle2,
   AlertTriangle,
   Award,
@@ -224,8 +223,12 @@ export const ResultsReport: FC<ResultsReportProps> = ({ result, viewerConfig }) 
         {/* Document Header with Logo & Formal Metadata Box */}
         <div className="dossier-header-grid">
           <div className="dossier-branding">
-            <div className="dossier-logo-badge">
-              <Layers size={28} color="#0284c7" />
+            <div className="dossier-logo-badge" style={{ background: 'transparent', padding: 0 }}>
+              <img
+                src="/logo.png"
+                alt="SatQuery AI Logo"
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
             </div>
             <div className="dossier-org-text">
               <h1 className="dossier-title">SatQuery AI • Earth Observation Suite</h1>

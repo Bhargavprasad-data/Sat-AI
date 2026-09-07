@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 
-import { Layers, Activity, Server, GitPullRequest, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Activity, Server, GitPullRequest, ShieldCheck, RefreshCw } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'workspace' | 'architecture' | 'problem-solution' | 'use-cases';
@@ -18,8 +18,8 @@ export const Navbar: FC<NavbarProps> = ({
     <header className="header-bar">
       <div className="header-inner">
         <div className="brand-section">
-          <div className="brand-logo-badge">
-            <Layers size={22} />
+          <div className="brand-logo-badge" style={{ padding: '3px', background: 'transparent' }}>
+            <img src="/logo.png" alt="SatQuery AI Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
           </div>
           <div>
             <div className="brand-title">
