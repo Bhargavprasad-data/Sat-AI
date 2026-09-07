@@ -1070,7 +1070,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '380px 1fr',
+          gridTemplateColumns: '400px 1fr',
           gap: '1.75rem',
           alignItems: 'start',
           width: '100%',
@@ -1135,7 +1135,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
             </div>
 
             {/* Direct Input Field */}
-            <div style={{ display: 'flex', gap: '6px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '0.45rem' }}>
               <input
                 type="text"
                 value={locationQuery}
@@ -1152,55 +1152,18 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                 placeholder="Type any city, area or lat,lon..."
                 style={{
                   flex: 1,
-                  padding: '0.5rem 0.75rem',
+                  minWidth: 0,
+                  padding: '0.55rem 0.75rem',
                   borderRadius: '8px',
                   fontSize: '0.86rem',
                 }}
               />
               <button
                 type="button"
-                onClick={detectUserLocation}
-                disabled={isLocatingUser}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  background: autoLocationDetected
-                    ? 'rgba(34, 197, 94, 0.15)'
-                    : 'var(--bg-tertiary)',
-                  color: autoLocationDetected ? '#22c55e' : 'var(--text-primary)',
-                  border: autoLocationDetected
-                    ? '1px solid #22c55e'
-                    : '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '0.82rem',
-                  cursor: isLocatingUser ? 'wait' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  flexShrink: 0,
-                  transition: 'all 0.18s ease',
-                }}
-                title="Auto-detect current GPS location"
-              >
-                <Navigation
-                  size={13}
-                  style={{
-                    transform: isLocatingUser ? 'rotate(45deg)' : 'none',
-                    transition: 'transform 0.3s',
-                  }}
-                />
-                {isLocatingUser
-                  ? 'Locating...'
-                  : autoLocationDetected
-                  ? 'GPS Active'
-                  : 'Auto GPS'}
-              </button>
-              <button
-                type="button"
                 onClick={() => handleLocationSubmit(locationQuery)}
                 disabled={isGeocoding}
                 style={{
-                  padding: '0.5rem 0.85rem',
+                  padding: '0.55rem 0.95rem',
                   background: 'var(--accent-sky)',
                   color: '#ffffff',
                   border: 'none',
@@ -1210,13 +1173,78 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   cursor: isGeocoding ? 'wait' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '5px',
                   flexShrink: 0,
+                  boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)',
                 }}
                 title="Locate area on map"
               >
                 <MapPin size={14} />
-                {isGeocoding ? 'Locating...' : 'Locate'}
+                <span>{isGeocoding ? 'Locating...' : 'Locate'}</span>
+              </button>
+            </div>
+
+            {/* GPS Auto-Location Status & Action Row */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.4rem 0.75rem',
+                background: autoLocationDetected
+                  ? 'rgba(34, 197, 94, 0.1)'
+                  : 'var(--bg-tertiary)',
+                border: autoLocationDetected
+                  ? '1px solid rgba(34, 197, 94, 0.35)'
+                  : '1px solid var(--border-color)',
+                borderRadius: '8px',
+                marginBottom: '0.45rem',
+                fontSize: '0.78rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Navigation
+                  size={13}
+                  color={autoLocationDetected ? '#22c55e' : 'var(--accent-sky)'}
+                  style={{
+                    transform: isLocatingUser ? 'rotate(45deg)' : 'none',
+                    transition: 'transform 0.3s',
+                  }}
+                />
+                <span
+                  style={{
+                    color: autoLocationDetected ? '#22c55e' : 'var(--text-secondary)',
+                    fontWeight: 600,
+                    fontSize: '0.76rem',
+                  }}
+                >
+                  {isLocatingUser
+                    ? 'Detecting your GPS location...'
+                    : autoLocationDetected
+                    ? 'GPS Active: Auto-detected'
+                    : 'Auto-detect device location'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={detectUserLocation}
+                disabled={isLocatingUser}
+                style={{
+                  background: autoLocationDetected
+                    ? 'rgba(34, 197, 94, 0.2)'
+                    : 'rgba(56, 189, 248, 0.12)',
+                  border: 'none',
+                  color: autoLocationDetected ? '#22c55e' : '#38bdf8',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  cursor: isLocatingUser ? 'wait' : 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                title="Refresh and auto-detect current GPS location"
+              >
+                {isLocatingUser ? 'Detecting...' : autoLocationDetected ? 'Re-detect' : 'Use GPS'}
               </button>
             </div>
 
