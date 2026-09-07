@@ -8,7 +8,7 @@ interface SplashScreenProps {
 
 export const SplashScreen: FC<SplashScreenProps> = ({
   onComplete,
-  durationMs = 2400
+  durationMs = 2800
 }) => {
   const [isExiting, setIsExiting] = useState(false);
 
@@ -16,7 +16,7 @@ export const SplashScreen: FC<SplashScreenProps> = ({
     // Trigger exit animation shortly before completion
     const exitTimer = setTimeout(() => {
       setIsExiting(true);
-    }, durationMs - 500);
+    }, durationMs - 550);
 
     // Call onComplete when fully finished
     const completeTimer = setTimeout(() => {
@@ -36,6 +36,9 @@ export const SplashScreen: FC<SplashScreenProps> = ({
     }, 250);
   };
 
+  const titleWhite = ['S', 'a', 't', 'Q', 'u', 'e', 'r', 'y'];
+  const titleGreen = ['A', 'I'];
+
   return (
     <div 
       className={`splash-screen-container ${isExiting ? 'splash-exiting' : ''}`}
@@ -48,17 +51,65 @@ export const SplashScreen: FC<SplashScreenProps> = ({
       <div className="splash-ambient-glow glow-2" />
       <div className="splash-grid-mesh" />
 
-      {/* Main Banner Card */}
-      <div className="splash-content-box">
-        <div className="splash-banner-wrapper">
-          <img 
-            src="/splash_banner.png" 
-            alt="SatQuery AI - Earth Insights Made Simple" 
-            className="splash-banner-img"
-          />
-          <div className="splash-light-sheen" />
+      {/* Main Cinematic Logo & Text Reveal Box */}
+      <div className="splash-reveal-card">
+        <div className="splash-brand-hero-row">
+          {/* Glowing Circular Emblem */}
+          <div className="splash-emblem-wrapper">
+            <div className="splash-emblem-ring" />
+            <img 
+              src="/logo_symbol.png" 
+              alt="SatQuery AI Logo Emblem" 
+              className="splash-emblem-img"
+            />
+          </div>
+
+          {/* Staggered Letter-by-Letter Title */}
+          <div className="splash-text-column">
+            <div className="splash-title-row">
+              <span className="splash-letters-group splash-white">
+                {titleWhite.map((char, i) => (
+                  <span 
+                    key={`w-${i}`} 
+                    className="splash-letter"
+                    style={{ animationDelay: `${100 + i * 65}ms` }}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </span>
+
+              <span className="splash-space">&nbsp;</span>
+
+              <span className="splash-letters-group splash-green">
+                {titleGreen.map((char, i) => (
+                  <span 
+                    key={`g-${i}`} 
+                    className="splash-letter splash-letter-ai"
+                    style={{ animationDelay: `${100 + (titleWhite.length + i) * 65 + 40}ms` }}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </span>
+            </div>
+
+            {/* Accent Line under 'Sat' */}
+            <div className="splash-accent-bar-track">
+              <div className="splash-accent-bar-fill" />
+            </div>
+
+            {/* Subtitle Tagline */}
+            <div className="splash-tagline">
+              <span>EARTH INSIGHTS MADE SIMPLE</span>
+            </div>
+          </div>
         </div>
+
+        {/* Shimmer Light Scan */}
+        <div className="splash-card-sheen" />
       </div>
     </div>
   );
 };
+
