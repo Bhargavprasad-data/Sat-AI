@@ -14,8 +14,7 @@ import {
   MessageSquare,
   X,
   Send,
-  Calendar,
-  Cpu
+  Calendar
 } from 'lucide-react';
 import type { AnalysisResult } from '../types';
 

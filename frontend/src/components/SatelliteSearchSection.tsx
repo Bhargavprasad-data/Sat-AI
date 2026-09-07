@@ -20,8 +20,7 @@ import {
   MessageSquare,
   Navigation,
   Send,
-  CheckCircle2,
-  Cpu
+  CheckCircle2
 } from 'lucide-react';
 import { MapContainer, TileLayer, useMap, Polygon, Marker, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
