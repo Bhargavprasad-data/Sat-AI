@@ -173,7 +173,7 @@ function makeNumberedIcon(num: number, color: string) {
       display:flex;align-items:center;justify-content:center;
       color:#fff;font-weight:700;font-size:13px;
       box-shadow:0 2px 8px rgba(0,0,0,0.4);
-      font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     ">${num}</div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
