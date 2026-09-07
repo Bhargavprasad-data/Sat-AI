@@ -2348,7 +2348,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   }}
                 >
                   <img
-                    src="/logo_circle.png"
+                    src="/logo_symbol.png"
                     alt="SatQuery AI Logo"
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />

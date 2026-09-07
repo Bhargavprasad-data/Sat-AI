@@ -17,7 +17,7 @@ export const Navbar: FC<NavbarProps> = ({
   return (
     <header className="header-bar">
       <div className="header-inner">
-        <div className="brand-section">
+        <div className="brand-section" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div
             className="brand-logo-badge"
             style={{
@@ -36,20 +36,30 @@ export const Navbar: FC<NavbarProps> = ({
             }}
           >
             <img
-              src="/logo_circle.png"
-              alt="SatQuery AI Logo"
+              src="/logo_symbol.png"
+              alt="SatQuery AI Logo Symbol"
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
-          <div>
-            <div className="brand-title">
-              SatQuery AI
-              <span className="status-badge badge-live-demo" title="SIH 2026 Evaluation Sandbox">
-                <span className="badge-pulse-dot"></span>
-                DEMO MODE
-              </span>
-            </div>
-            <div className="brand-tagline">Geospatial Intelligence Assistant • SIH 2026</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img
+              src="/logo_text.png"
+              alt="SatQuery AI - Earth Insights Made Simple"
+              style={{
+                height: '38px',
+                width: 'auto',
+                objectFit: 'contain',
+                display: 'block',
+              }}
+            />
+            <span
+              className="status-badge badge-live-demo"
+              title="SIH 2026 Evaluation Sandbox"
+              style={{ alignSelf: 'flex-start', marginTop: '2px' }}
+            >
+              <span className="badge-pulse-dot"></span>
+              DEMO MODE
+            </span>
           </div>
         </div>
 
