@@ -1005,21 +1005,24 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
     active: boolean,
     accentColor = 'var(--accent-sky)'
   ): React.CSSProperties => ({
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    padding: '0.45rem 1rem',
+    padding: '0.35rem 0.85rem',
     borderRadius: '8px',
     border: active
-      ? `2px solid ${accentColor}`
-      : '2px solid rgba(255,255,255,0.15)',
+      ? `1.5px solid ${accentColor}`
+      : '1.5px solid rgba(255,255,255,0.15)',
     background: active ? `${accentColor}33` : 'rgba(255,255,255,0.06)',
-    color: active ? accentColor : 'rgba(255,255,255,0.7)',
+    color: active ? accentColor : 'rgba(255,255,255,0.8)',
     fontWeight: active ? 700 : 500,
-    fontSize: '0.82rem',
+    fontSize: '0.78rem',
     cursor: 'pointer',
     transition: 'all 0.18s',
     whiteSpace: 'nowrap',
+    flexShrink: 0,
+    height: '32px',
+    boxSizing: 'border-box',
   });
 
   // ─── Render ──────────────────────────────────────────────────────────────
@@ -1549,6 +1552,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
             {/* ─── Visualization Layer Toolbar (pinned to bottom of map) ─── */}
             {isVizToolbarOpen ? (
               <div
+                id="satellite-viz-toolbar"
                 style={{
                   position: 'absolute',
                   bottom: '12px',
@@ -1557,26 +1561,36 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   display: 'flex',
                   gap: '6px',
                   zIndex: 1000,
-                  background: 'rgba(10,16,30,0.88)',
-                  backdropFilter: 'blur(14px)',
-                  borderRadius: '12px',
-                  padding: '6px 10px',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-                  flexWrap: 'wrap',
+                  background: 'rgba(10, 16, 30, 0.92)',
+                  backdropFilter: 'blur(16px)',
+                  borderRadius: '30px',
+                  padding: '5px 8px 5px 14px',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.55)',
+                  flexWrap: 'nowrap',
+                  whiteSpace: 'nowrap',
                   alignItems: 'center',
+                  width: 'max-content',
+                  maxWidth: 'calc(100% - 24px)',
+                  overflowX: 'auto',
                 }}
               >
                 <span
                   style={{
-                    fontSize: '0.7rem',
-                    color: 'rgba(255,255,255,0.45)',
+                    fontSize: '0.68rem',
+                    color: 'rgba(255, 255, 255, 0.55)',
                     fontWeight: 700,
                     marginRight: '4px',
-                    letterSpacing: '0.05em',
+                    letterSpacing: '0.06em',
+                    flexShrink: 0,
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
                   }}
                 >
-                  VISUALIZATION LAYERS
+                  <Layers size={13} color="#38bdf8" />
+                  <span>Visualization Layers:</span>
                 </span>
                 <button
                   style={layerBtnStyle(vizLayer === 'heatmap', '#f97316')}
@@ -1586,7 +1600,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   title="Toggle Heatmap layer"
                 >
                   <Flame size={14} />
-                  Heatmap
+                  <span>Heatmap</span>
                 </button>
                 <button
                   style={layerBtnStyle(vizLayer === 'binary', '#a855f7')}
@@ -1596,7 +1610,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   title="Toggle Binary Mask layer"
                 >
                   <Layers size={14} />
-                  Binary Mask
+                  <span>Binary Mask</span>
                 </button>
                 <button
                   id="btn-change-objects"
@@ -1615,8 +1629,20 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   title="Toggle Change Objects overlay"
                 >
                   <GitCompare size={14} />
-                  Change Objects
+                  <span>Change Objects</span>
                 </button>
+
+                {/* Subtle vertical divider */}
+                <div
+                  style={{
+                    width: '1px',
+                    height: '18px',
+                    background: 'rgba(255, 255, 255, 0.15)',
+                    margin: '0 2px',
+                    flexShrink: 0,
+                  }}
+                />
+
                 <button
                   id="btn-ask-question-search"
                   style={{
@@ -1625,12 +1651,13 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                     color: '#ffffff',
                     border: 'none',
                     boxShadow: '0 2px 10px rgba(2, 132, 199, 0.4)',
+                    fontWeight: 600,
                   }}
                   onClick={() => setIsQuestionModalOpen(true)}
                   title="Ask question about detected changes"
                 >
                   <MessageSquare size={14} />
-                  Ask Question
+                  <span>Ask Question</span>
                 </button>
 
                 {/* Close / Hide Toolbar button */}
@@ -1640,14 +1667,17 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   style={{
                     background: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
-                    borderRadius: '6px',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
                     color: 'rgba(255, 255, 255, 0.75)',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    padding: '5px',
-                    marginLeft: '4px',
+                    padding: 0,
+                    marginLeft: '2px',
+                    flexShrink: 0,
                     transition: 'all 0.15s ease',
                   }}
                   title="Close / Hide Visualization Layers Toolbar"
