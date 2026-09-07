@@ -1,0 +1,31 @@
+{
+  "scenario_id": "scenario_b_change",
+  "title": "Scenario B \u2014 Bi-temporal Change (2024 vs 2026)",
+  "modality": "Optical",
+  "crs": "EPSG:32643",
+  "crs_name": "WGS 84 / UTM Zone 43N",
+  "resolution": "10.0m / pixel",
+  "bounds": [
+    77.1025,
+    28.52,
+    77.1812,
+    28.5985
+  ],
+  "dates": [
+    "2024-04-10",
+    "2026-04-14"
+  ],
+  "sensor": "Sentinel-2 MSI",
+  "suggested_queries": [
+    "What significant changes occurred between these two dates?",
+    "Where has significant surface change occurred?",
+    "Quantify the area affected by surface reflectance changes."
+  ],
+  "baseline_metrics": {
+    "total_pixels": 589824,
+    "changed_pixels": 58341,
+    "percentage_change": 9.89,
+    "gsd_m": 10.0,
+    "changed_area_km2": 5.83
+  }
+}

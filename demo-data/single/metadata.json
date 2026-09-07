@@ -1,0 +1,31 @@
+{
+  "scenario_id": "scenario_a_vqa",
+  "title": "Scenario A \u2014 Land Cover VQA",
+  "modality": "Optical",
+  "crs": "EPSG:32643",
+  "crs_name": "WGS 84 / UTM Zone 43N",
+  "resolution": "10.0m / pixel",
+  "bounds": [
+    77.1025,
+    28.52,
+    77.1812,
+    28.5985
+  ],
+  "acquisition_date": "2025-03-15",
+  "sensor": "Sentinel-2 MSI (Level-2A BOA Reflectance)",
+  "suggested_queries": [
+    "What land cover types are visible in this region?",
+    "Is there a water body in this region?",
+    "What is the predominant land cover in the south-west sector?"
+  ],
+  "baseline_response": {
+    "answer": "Visible land-cover patterns in this scene include dense riparian vegetation, cultivated agricultural plots, a meandering river system, and an emerging built-up settlement in the south-west quadrant.",
+    "confidence_available": false,
+    "classes_detected": [
+      "Vegetation / Farmland (52.4%)",
+      "Water Body / River (8.1%)",
+      "Urban / Built-up (18.6%)",
+      "Fallow / Bare Soil (20.9%)"
+    ]
+  }
+}

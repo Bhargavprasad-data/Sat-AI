@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sat-ai
+    runtime: docker
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: SATELLITE_PROVIDER
+        value: aws_earth_search
+      - key: PYTHONUNBUFFERED
+        value: 1

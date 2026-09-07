@@ -1,0 +1,21 @@
+{
+  "scenario_id": "scenario_c_optical_sar",
+  "title": "Scenario C \u2014 Optical + SAR Joint Analysis",
+  "modality": "Optical + SAR",
+  "crs": "EPSG:32643",
+  "crs_name": "WGS 84 / UTM Zone 43N",
+  "resolution": "10.0m / pixel",
+  "bounds": [
+    77.1025,
+    28.52,
+    77.1812,
+    28.5985
+  ],
+  "optical_sensor": "Sentinel-2 MSI",
+  "sar_sensor": "Sentinel-1 C-Band SAR (VV Polarisation, IW)",
+  "suggested_queries": [
+    "Analyze this region using both optical and SAR imagery.",
+    "What areas show consistent information across optical and SAR imagery?",
+    "Compare surface water detection between optical reflectance and SAR backscatter."
+  ]
+}
