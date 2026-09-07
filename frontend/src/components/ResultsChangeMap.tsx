@@ -14,7 +14,6 @@ import {
   MessageSquare,
   X,
   Send,
-  Sparkles,
   Calendar,
   Cpu
 } from 'lucide-react';
@@ -1225,17 +1224,7 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
                     </div>
                     {answerSource && (
                       <span className="answer-source-badge">
-                        {answerSource.includes('Gemini') ? (
-                          <>
-                            <Sparkles size={11} color="#38bdf8" />
-                            <span>{answerSource}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Cpu size={11} color="#64748b" />
-                            <span>{answerSource}</span>
-                          </>
-                        )}
+                        <span>{answerSource}</span>
                       </span>
                     )}
                   </div>

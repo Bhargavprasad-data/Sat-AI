@@ -19,7 +19,6 @@ import {
   ArrowRight,
   MessageSquare,
   Navigation,
-  Sparkles,
   Send,
   CheckCircle2,
   Cpu
@@ -1560,7 +1559,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   display: 'flex',
                   gap: '6px',
                   zIndex: 1000,
-                  background: 'rgba(10, 16, 30, 0.92)',
+                  background: 'rgba(5, 8, 17, 0.94)',
                   backdropFilter: 'blur(16px)',
                   borderRadius: '30px',
                   padding: '5px 8px 5px 14px',
@@ -1696,7 +1695,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   left: '50%',
                   transform: 'translateX(-50%)',
                   zIndex: 1000,
-                  background: 'rgba(10, 16, 30, 0.92)',
+                  background: 'rgba(5, 8, 17, 0.94)',
                   backdropFilter: 'blur(16px)',
                   border: '1px solid rgba(56, 189, 248, 0.45)',
                   borderRadius: '20px',
@@ -1727,7 +1726,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   top: '12px',
                   right: '12px',
                   zIndex: 999,
-                  background: 'rgba(10,16,30,0.92)',
+                  background: 'rgba(5, 8, 17, 0.94)',
                   backdropFilter: 'blur(16px)',
                   border: '1px solid rgba(56,189,248,0.4)',
                   borderRadius: '8px',
@@ -1758,7 +1757,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   right: 0,
                   width: '230px',
                   height: '420px',
-                  background: 'rgba(10,16,30,0.93)',
+                  background: 'rgba(5, 8, 17, 0.95)',
                   backdropFilter: 'blur(18px)',
                   borderLeft: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '0 12px 12px 0',
@@ -1897,7 +1896,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   bottom: '50px',
                   right: isChangesListOpen ? '240px' : '16px',
                   width: '260px',
-                  background: 'rgba(8,14,26,0.97)',
+                  background: 'rgba(5, 8, 17, 0.97)',
                   backdropFilter: 'blur(20px)',
                   border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: '12px',
@@ -2433,17 +2432,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                     </div>
                     {answerSource && (
                       <span className="answer-source-badge">
-                        {answerSource.includes('Gemini') ? (
-                          <>
-                            <Sparkles size={11} color="#0284c7" />
-                            <span>{answerSource}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Cpu size={11} color="#64748b" />
-                            <span>{answerSource}</span>
-                          </>
-                        )}
+                        <span>{answerSource}</span>
                       </span>
                     )}
                   </div>

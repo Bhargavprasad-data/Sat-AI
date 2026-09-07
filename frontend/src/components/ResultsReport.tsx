@@ -236,6 +236,7 @@ export const ResultsReport: FC<ResultsReportProps> = ({ result, viewerConfig }) 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexShrink: 0,
               }}
             >
               <img
@@ -245,7 +246,20 @@ export const ResultsReport: FC<ResultsReportProps> = ({ result, viewerConfig }) 
               />
             </div>
             <div className="dossier-org-text">
-              <h1 className="dossier-title">SatQuery AI • Earth Observation Suite</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2px' }}>
+                <img
+                  src="/logo_text.png"
+                  alt="SatQuery AI - Earth Insights Made Simple"
+                  className="brand-text-logo-dark-theme"
+                  style={{ height: '34px', width: 'auto', objectFit: 'contain' }}
+                />
+                <img
+                  src="/logo_text_dark.png"
+                  alt="SatQuery AI - Earth Insights Made Simple"
+                  className="brand-text-logo-light-theme"
+                  style={{ height: '34px', width: 'auto', objectFit: 'contain' }}
+                />
+              </div>
               <p className="dossier-subtitle">
                 Autonomous Spaceborne Reflectance & Radar Analytical Verification Engine
               </p>

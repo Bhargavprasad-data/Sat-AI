@@ -45,11 +45,21 @@ export const Navbar: FC<NavbarProps> = ({
             <img
               src="/logo_text.png"
               alt="SatQuery AI - Earth Insights Made Simple"
+              className="brand-text-logo-dark-theme"
               style={{
                 height: '38px',
                 width: 'auto',
                 objectFit: 'contain',
-                display: 'block',
+              }}
+            />
+            <img
+              src="/logo_text_dark.png"
+              alt="SatQuery AI - Earth Insights Made Simple"
+              className="brand-text-logo-light-theme"
+              style={{
+                height: '38px',
+                width: 'auto',
+                objectFit: 'contain',
               }}
             />
             <span

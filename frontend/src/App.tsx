@@ -3,10 +3,11 @@ import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import type { ThemeType } from './components/TopBar';
 import type { ResultTab } from './types';
-
 import { Workspace } from './components/Workspace';
+import { SplashScreen } from './components/SplashScreen';
 
 export function App() {
+  const [showSplash, setShowSplash] = useState<boolean>(true);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>('scenario_b_change');
   const [activeView, setActiveView] = useState<'config' | 'results' | 'satellite_search'>('config');
   const [activeResultTab, setActiveResultTab] = useState<ResultTab>('region');
@@ -67,56 +68,66 @@ export function App() {
   };
 
   return (
-    <div className="postman-dashboard-layout" data-theme={currentTheme}>
-      {/* 1. Hotstar / JioCinema Style Expandable Sidebar */}
-      <Sidebar
-        onGoHome={handleGoHome}
-        onGoSatelliteSearch={handleGoSatelliteSearch}
-        isHomeActive={activeView === 'config'}
-        isBackendConnected={isBackendConnected}
-        activeView={activeView}
-        activeResultTab={activeResultTab}
-        onSelectResultTab={handleSelectResultTab}
-        hasResult={hasResult}
-        isProcessing={isProcessing}
-      />
-
-      {/* 2. Main Dashboard Shell */}
-      <div className="dashboard-main-shell">
-        {/* Postman Style Top Command Bar */}
-        <TopBar
+    <>
+      {showSplash && (
+        <SplashScreen
+          onComplete={() => {
+            setShowSplash(false);
+            handleGoHome();
+          }}
+        />
+      )}
+      <div className="postman-dashboard-layout" data-theme={currentTheme}>
+        {/* 1. Hotstar / JioCinema Style Expandable Sidebar */}
+        <Sidebar
           onGoHome={handleGoHome}
-          onResetDemo={handleResetDemo}
+          onGoSatelliteSearch={handleGoSatelliteSearch}
+          isHomeActive={activeView === 'config'}
           isBackendConnected={isBackendConnected}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          currentTheme={currentTheme}
-          onSelectTheme={setCurrentTheme}
+          activeView={activeView}
+          activeResultTab={activeResultTab}
+          onSelectResultTab={handleSelectResultTab}
+          hasResult={hasResult}
+          isProcessing={isProcessing}
         />
 
-        {/* Viewport Content: Direct Core Product Workspace */}
-        <main className="dashboard-content-body">
-          <Workspace
-            key={`${selectedScenarioId}-${resetKey}`}
-            initialScenarioId={selectedScenarioId}
-            isBackendOffline={!isBackendConnected}
-            onRetryHandshake={checkBackendHealth}
-            activeView={activeView}
-            onViewChange={setActiveView}
-            activeResultTab={activeResultTab}
-            onSelectResultTab={setActiveResultTab}
-            onResultGenerated={() => {
-              setHasResult(true);
-              setIsProcessing(false);
-            }}
-            onProcessingChange={(loading) => {
-              setIsProcessing(loading);
-              if (loading) setHasResult(false);
-            }}
+        {/* 2. Main Dashboard Shell */}
+        <div className="dashboard-main-shell">
+          {/* Postman Style Top Command Bar */}
+          <TopBar
+            onGoHome={handleGoHome}
+            onResetDemo={handleResetDemo}
+            isBackendConnected={isBackendConnected}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            currentTheme={currentTheme}
+            onSelectTheme={setCurrentTheme}
           />
-        </main>
+
+          {/* Viewport Content: Direct Core Product Workspace */}
+          <main className="dashboard-content-body">
+            <Workspace
+              key={`${selectedScenarioId}-${resetKey}`}
+              initialScenarioId={selectedScenarioId}
+              isBackendOffline={!isBackendConnected}
+              onRetryHandshake={checkBackendHealth}
+              activeView={activeView}
+              onViewChange={setActiveView}
+              activeResultTab={activeResultTab}
+              onSelectResultTab={setActiveResultTab}
+              onResultGenerated={() => {
+                setHasResult(true);
+                setIsProcessing(false);
+              }}
+              onProcessingChange={(loading) => {
+                setIsProcessing(loading);
+                if (loading) setHasResult(false);
+              }}
+            />
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

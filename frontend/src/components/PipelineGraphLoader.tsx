@@ -9,8 +9,7 @@ import {
   CheckCircle2,
   Activity,
   Zap,
-  Radio,
-  Sparkles
+  Radio
 } from 'lucide-react';
 
 interface PipelineGraphLoaderProps {
@@ -155,7 +154,6 @@ export const PipelineGraphLoader: FC<PipelineGraphLoaderProps> = ({
       {/* 2. Active Phase Subtitle */}
       <div className="pgl-phase-indicator">
         <div className="pgl-phase-left">
-          <Sparkles size={14} color="var(--accent-sky)" />
           <span>Current Phase:</span>
           <strong>{processingStage || 'Initializing execution graph...'}</strong>
         </div>

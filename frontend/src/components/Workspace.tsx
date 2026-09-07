@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { FC, ChangeEvent } from 'react';
 import {
   Play,
-  Sparkles,
   AlertCircle,
   UploadCloud,
   Layers,
@@ -513,7 +512,6 @@ export const Workspace: FC<WorkspaceProps> = ({
         <div className="panel-card">
           <div className="panel-header">
             <div className="panel-title">
-              <Sparkles size={16} color="var(--accent-sky)" />
               <span>Analysis Configuration</span>
             </div>
             <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Sentinel-2 MSI • 10m GSD</span>

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { FC } from 'react';
 import {
   Download,
-  Sparkles,
   TrendingUp,
   ShieldCheck,
   Ruler,
@@ -156,7 +155,6 @@ export const ResultsView: FC<ResultsViewProps> = ({
             <div className="panel-header-row">
               <div className="panel-header-title-group">
                 <div className="panel-header-badge">
-                  <Sparkles size={11} className="sparkle-spin" />
                   <span>AI INFERENCE</span>
                 </div>
                 <h3 className="panel-header-title">Analysis Result</h3>

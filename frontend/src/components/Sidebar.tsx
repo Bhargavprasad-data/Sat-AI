@@ -83,7 +83,14 @@ export const Sidebar: FC<SidebarProps> = ({
             <img
               src="/logo_text.png"
               alt="SatQuery AI - Earth Insights Made Simple"
-              style={{ height: '30px', width: 'auto', objectFit: 'contain', display: 'block' }}
+              className="brand-text-logo-dark-theme"
+              style={{ height: '30px', width: 'auto', objectFit: 'contain' }}
+            />
+            <img
+              src="/logo_text_dark.png"
+              alt="SatQuery AI - Earth Insights Made Simple"
+              className="brand-text-logo-light-theme"
+              style={{ height: '30px', width: 'auto', objectFit: 'contain' }}
             />
           </div>
         </div>
