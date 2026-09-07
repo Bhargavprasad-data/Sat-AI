@@ -21,24 +21,24 @@ export const Navbar: FC<NavbarProps> = ({
           <div
             className="brand-logo-badge"
             style={{
-              width: '38px',
-              height: '38px',
+              width: '42px',
+              height: '42px',
               borderRadius: '50%',
               overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               background: '#ffffff',
-              border: '2px solid rgba(56, 189, 248, 0.45)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+              border: '2px solid rgba(56, 189, 248, 0.55)',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.25)',
               flexShrink: 0,
               padding: 0,
             }}
           >
             <img
-              src="/logo.png"
+              src="/logo_circle.png"
               alt="SatQuery AI Logo"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
           <div>

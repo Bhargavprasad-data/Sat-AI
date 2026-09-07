@@ -231,7 +231,7 @@ export const ResultsReport: FC<ResultsReportProps> = ({ result, viewerConfig }) 
                 borderRadius: '50%',
                 overflow: 'hidden',
                 background: '#ffffff',
-                border: '2px solid rgba(56, 189, 248, 0.45)',
+                border: '2px solid rgba(56, 189, 248, 0.55)',
                 padding: 0,
                 display: 'flex',
                 alignItems: 'center',
@@ -239,9 +239,9 @@ export const ResultsReport: FC<ResultsReportProps> = ({ result, viewerConfig }) 
               }}
             >
               <img
-                src="/logo.png"
+                src="/logo_circle.png"
                 alt="SatQuery AI Logo"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />
             </div>
             <div className="dossier-org-text">

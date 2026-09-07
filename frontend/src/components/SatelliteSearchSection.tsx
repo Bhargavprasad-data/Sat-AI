@@ -2304,23 +2304,23 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
               <div className="modal-header-icon-wrap">
                 <div
                   style={{
-                    width: '32px',
-                    height: '32px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '50%',
                     overflow: 'hidden',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     background: '#ffffff',
-                    border: '2px solid rgba(56, 189, 248, 0.45)',
+                    border: '2px solid rgba(56, 189, 248, 0.55)',
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                     flexShrink: 0,
                   }}
                 >
                   <img
-                    src="/logo.png"
+                    src="/logo_circle.png"
                     alt="SatQuery AI Logo"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 </div>
                 <span className="modal-header-title">
