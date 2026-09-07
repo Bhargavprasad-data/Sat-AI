@@ -851,11 +851,19 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
                         {ch.id}
                       </div>
                       <div className="change-info-col">
-                        <div
-                          className="change-row-title"
-                          style={{ color: isSelected ? '#ffffff' : ch.color }}
-                        >
-                          {ch.label}
+                        <div className="change-row-title">
+                          <span
+                            className="change-title-text"
+                            style={{
+                              color: isSelected
+                                ? 'var(--accent-sky)'
+                                : ch.color === '#eab308'
+                                ? '#b45309'
+                                : ch.color,
+                            }}
+                          >
+                            {ch.label}
+                          </span>
                         </div>
                         <div className="change-row-meta">
                           <span>Area: {ch.area.toLocaleString()} m²</span>
@@ -866,7 +874,6 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
                       <ChevronRight
                         size={15}
                         className="change-chevron"
-                        color={isSelected ? '#38bdf8' : 'rgba(255,255,255,0.4)'}
                       />
                     </div>
                   );
@@ -917,7 +924,16 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
                 <div className="detail-props-table">
                   <div className="detail-prop-row">
                     <span className="prop-name">Type:</span>
-                    <span className="prop-val highlight" style={{ color: selectedChange.color }}>
+                    <span
+                      className="prop-val highlight"
+                      style={{
+                        color:
+                          selectedChange.color === '#eab308'
+                            ? '#b45309'
+                            : selectedChange.color,
+                        fontWeight: 700,
+                      }}
+                    >
                       {selectedChange.label}
                     </span>
                   </div>
