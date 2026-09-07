@@ -16,7 +16,6 @@ import {
   Send,
   Sparkles,
   Calendar,
-  Bot,
   Cpu
 } from 'lucide-react';
 import type { AnalysisResult } from '../types';
@@ -1148,10 +1147,6 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
                   />
                 </div>
                 <span className="modal-header-title">Satellite Change Intelligence Assistant</span>
-                <span className="gemini-pill-badge" title="Powered by Google Gemini Generative Intelligence">
-                  <Bot size={12} />
-                  <span>Gemini AI</span>
-                </span>
               </div>
               <button
                 className="btn-modal-close"

@@ -22,7 +22,6 @@ import {
   Sparkles,
   Send,
   CheckCircle2,
-  Bot,
   Cpu
 } from 'lucide-react';
 import { MapContainer, TileLayer, useMap, Polygon, Marker, Tooltip } from 'react-leaflet';
@@ -2355,10 +2354,6 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                 </div>
                 <span className="modal-header-title">
                   Satellite Change Intelligence Assistant
-                </span>
-                <span className="gemini-pill-badge" title="Powered by Google Gemini Generative Intelligence">
-                  <Bot size={12} />
-                  <span>Gemini AI</span>
                 </span>
               </div>
               <button
