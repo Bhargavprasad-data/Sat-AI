@@ -126,10 +126,10 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background-image: 
-    linear-gradient(rgba(5, 8, 17, 0.40), rgba(5, 8, 17, 0.60)),
+    linear-gradient(rgba(5, 8, 17, 0.20), rgba(5, 8, 17, 0.40)),
     url('/satquery_hero_bg.png');
   background-size: cover;
-  background-position: center 25%;
+  background-position: right center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -8801,7 +8801,8 @@ body[data-theme="light"] {
   width: 100%;
   height: auto;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  max-height: 80vh;
   transition: transform 1.2s ease;
 }
 

@@ -52,7 +52,7 @@ export const SplashScreen: FC<SplashScreenProps> = ({
       <div className="splash-content-box">
         <div className="splash-banner-wrapper">
           <img 
-            src="/satquery_hero_bg.png" 
+            src="/splash_banner.png" 
             alt="SatQuery AI - Earth Insights Made Simple" 
             className="splash-banner-img"
           />
