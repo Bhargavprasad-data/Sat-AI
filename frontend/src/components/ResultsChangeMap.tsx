@@ -126,6 +126,7 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
   // Change selection & side panel
   const [selectedChange, setSelectedChange] = useState<DetectedChange | null>(CHANGE_OBJECTS_DATA[0]);
   const [hoveredChangeId, setHoveredChangeId] = useState<number | null>(null);
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState<boolean>(true);
 
   // Controls & Dialogs
   const [opacity, setOpacity] = useState<number>(0.92);
@@ -346,11 +347,28 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
             Comparing satellite imagery to identify and explain real-world changes
           </span>
         </div>
+        {showChangeObjects && !isSidePanelOpen && displayMode !== 'mask_only' && (
+          <button
+            className="btn-viz-layer"
+            onClick={() => setIsSidePanelOpen(true)}
+            style={{
+              padding: '4px 10px',
+              fontSize: '0.74rem',
+              color: '#38bdf8',
+              borderColor: 'rgba(56,189,248,0.4)',
+              background: 'rgba(56,189,248,0.1)',
+            }}
+            title="Open Detected Changes panel"
+          >
+            <ChevronLeft size={13} />
+            <span>Open Detected Changes ({CHANGE_OBJECTS_DATA.length})</span>
+          </button>
+        )}
       </div>
 
       {/* ─── Main Content Area: Map Canvas + Detected Changes Panel ──────── */}
       <div
-        className={`changemap-split-stage ${showChangeObjects && displayMode !== 'mask_only' ? 'with-sidebar' : 'full-width'}`}
+        className={`changemap-split-stage ${showChangeObjects && isSidePanelOpen && displayMode !== 'mask_only' ? 'with-sidebar' : 'full-width'}`}
       >
         {/* Left Column: Interactive Satellite Imagery Canvas */}
         <div className="changemap-canvas-card">
@@ -799,7 +817,7 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
         </div>
 
         {/* Right Column: Detected Changes (5) & Change Details Cards */}
-        {showChangeObjects && displayMode !== 'mask_only' && (
+        {showChangeObjects && isSidePanelOpen && displayMode !== 'mask_only' && (
           <div className="changemap-side-panel">
             {/* 1. Detected Changes (5) List Card */}
             <div className="side-card detected-changes-card">
@@ -807,6 +825,13 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
                 <span className="side-card-title">
                   Detected Changes ({CHANGE_OBJECTS_DATA.length})
                 </span>
+                <button
+                  className="btn-card-close"
+                  onClick={() => setIsSidePanelOpen(false)}
+                  title="Close Detected Changes panel"
+                >
+                  <X size={14} />
+                </button>
               </div>
               <div className="detected-changes-list">
                 {CHANGE_OBJECTS_DATA.map((ch) => {
@@ -957,7 +982,11 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
           <button
             id="btn-change-objects-map"
             className={`btn-viz-layer primary-glow ${showChangeObjects ? 'active' : ''}`}
-            onClick={() => setShowChangeObjects(!showChangeObjects)}
+            onClick={() => {
+              const next = !showChangeObjects;
+              setShowChangeObjects(next);
+              if (next) setIsSidePanelOpen(true);
+            }}
             title="Toggle interactive Change Objects polygons & detection panel"
           >
             <GitCompare size={14} color="#38bdf8" />

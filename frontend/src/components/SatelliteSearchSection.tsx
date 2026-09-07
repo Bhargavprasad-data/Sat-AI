@@ -367,10 +367,12 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
     null
   );
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [isChangesListOpen, setIsChangesListOpen] = useState(true);
 
   const handleChangeClick = useCallback((ch: DetectedChange) => {
     setSelectedChange(ch);
     setDetailsOpen(true);
+    setIsChangesListOpen(true);
   }, []);
 
   // ─── Presets ─────────────────────────────────────────────────────────────
@@ -1339,6 +1341,8 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   if (next === 'none') {
                     setDetailsOpen(false);
                     setSelectedChange(null);
+                  } else {
+                    setIsChangesListOpen(true);
                   }
                 }}
                 title="Toggle Change Objects overlay"
@@ -1348,8 +1352,39 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
               </button>
             </div>
 
+            {/* ─── Open Detected Changes Button (When panel is closed) ─── */}
+            {vizLayer === 'changes' && !isChangesListOpen && (
+              <button
+                onClick={() => setIsChangesListOpen(true)}
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                  zIndex: 999,
+                  background: 'rgba(10,16,30,0.92)',
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(56,189,248,0.4)',
+                  borderRadius: '8px',
+                  padding: '7px 12px',
+                  color: '#38bdf8',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 18px rgba(0,0,0,0.5)',
+                  transition: 'all 0.2s ease',
+                }}
+                title="Open Detected Changes panel"
+              >
+                <ChevronRight size={14} style={{ transform: 'rotate(180deg)' }} />
+                <span>Detected Changes ({CHANGE_DEFINITIONS.length})</span>
+              </button>
+            )}
+
             {/* ─── Detected Changes Side Panel (overlays on right of map) ─── */}
-            {vizLayer === 'changes' && (
+            {vizLayer === 'changes' && isChangesListOpen && (
               <div
                 style={{
                   position: 'absolute',
@@ -1369,7 +1404,10 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
               >
                 <div
                   style={{
-                    padding: '12px 14px 8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 12px 8px',
                     borderBottom: '1px solid rgba(255,255,255,0.1)',
                   }}
                 >
@@ -1383,6 +1421,24 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                   >
                     Detected Changes ({CHANGE_DEFINITIONS.length})
                   </span>
+                  <button
+                    onClick={() => setIsChangesListOpen(false)}
+                    style={{
+                      background: 'rgba(255,255,255,0.08)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: 'rgba(255,255,255,0.65)',
+                      cursor: 'pointer',
+                      padding: '3px 5px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.15s ease',
+                    }}
+                    title="Close panel"
+                  >
+                    <X size={13} />
+                  </button>
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto' }}>
                   {CHANGE_DEFINITIONS.map((ch) => (
@@ -1473,7 +1529,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                 style={{
                   position: 'absolute',
                   bottom: '50px',
-                  right: '240px',
+                  right: isChangesListOpen ? '240px' : '16px',
                   width: '260px',
                   background: 'rgba(8,14,26,0.97)',
                   backdropFilter: 'blur(20px)',
