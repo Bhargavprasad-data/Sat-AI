@@ -137,12 +137,14 @@ body {
 
 [data-theme="light"] body,
 body[data-theme="light"] {
-  background-color: var(--bg-primary);
+  background-color: #f8fafc;
   background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -15%, var(--accent-brand-subtle) 0%, transparent 70%),
-    radial-gradient(circle at 90% 85%, rgba(14, 165, 233, 0.04) 0%, transparent 50%),
-    linear-gradient(to bottom, var(--bg-primary), var(--bg-primary));
-  background-size: auto;
+    linear-gradient(rgba(248, 250, 252, 0.76), rgba(241, 245, 249, 0.86)),
+    url('/satquery_hero_bg.png');
+  background-size: cover;
+  background-position: right center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 /* Custom Scrollbar */
@@ -659,9 +661,33 @@ body[data-theme="light"] {
 }
 
 [data-theme="light"] .topbar-container {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(248, 250, 252, 0.45) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.7) !important;
+}
+
+[data-theme="light"] .panel-card {
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .config-col-left,
+[data-theme="light"] .config-col-right {
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(226, 232, 240, 0.85) !important;
+}
+
+[data-theme="light"] .sidebar-floating-container {
+  background: rgba(255, 255, 255, 0.88) !important;
   backdrop-filter: blur(16px) !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-right: 1px solid rgba(226, 232, 240, 0.85) !important;
 }
 
 .topbar-left {
