@@ -8013,12 +8013,59 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .modal-header-title {
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
+}
+
+.gemini-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(147, 51, 234, 0.15) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.02em;
+}
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-api-key-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-api-key-toggle:hover {
+  border-color: #38bdf8;
+  color: var(--text-primary);
+}
+
+.btn-api-key-toggle.active {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
 }
 
 .btn-modal-close {
@@ -8135,6 +8182,73 @@ body {
   cursor: not-allowed;
 }
 
+.gemini-key-input-card {
+  background: var(--bg-primary, rgba(15, 23, 42, 0.6));
+  border: 1px dashed rgba(56, 189, 248, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.key-input-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.key-input-help {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.key-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gemini-key-input {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.45rem 0.65rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  outline: none;
+  letter-spacing: 0.05em;
+}
+
+.gemini-key-input:focus {
+  border-color: #38bdf8;
+}
+
+.btn-clear-key {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-clear-key:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
 .modal-answer-box {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -8157,10 +8271,30 @@ body {
 .answer-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.answer-header-left {
+  display: flex;
+  align-items: center;
   gap: 6px;
   font-size: 0.78rem;
   font-weight: 700;
   color: #22c55e;
+}
+
+.answer-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-primary, rgba(0, 0, 0, 0.2));
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  padding: 2px 7px;
 }
 
 .answer-body-text {
@@ -8436,6 +8570,54 @@ body {
 
 [data-theme="light"] .answer-body-text {
   color: #0f172a !important;
+}
+
+[data-theme="light"] .gemini-pill-badge {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%) !important;
+  border-color: rgba(2, 132, 199, 0.35) !important;
+  color: #0284c7 !important;
+}
+
+[data-theme="light"] .btn-api-key-toggle {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .btn-api-key-toggle:hover {
+  border-color: #0284c7 !important;
+  color: #0284c7 !important;
+}
+
+[data-theme="light"] .btn-api-key-toggle.active {
+  background: #e0f2fe !important;
+  border-color: #38bdf8 !important;
+  color: #0284c7 !important;
+}
+
+[data-theme="light"] .gemini-key-input-card {
+  background: #f8fafc !important;
+  border-color: #93c5fd !important;
+}
+
+[data-theme="light"] .key-input-header {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .key-input-help {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .gemini-key-input {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .answer-source-badge {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
 }
 
 [data-theme="light"] .changemap-hud-panel {

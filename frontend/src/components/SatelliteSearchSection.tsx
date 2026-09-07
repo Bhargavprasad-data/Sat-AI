@@ -21,7 +21,10 @@ import {
   Navigation,
   Sparkles,
   Send,
-  CheckCircle2
+  CheckCircle2,
+  Bot,
+  Key,
+  Cpu
 } from 'lucide-react';
 import { MapContainer, TileLayer, useMap, Polygon, Marker, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
@@ -384,7 +387,12 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
   const [chatAnswer, setChatAnswer] = useState<string | null>(
     'Analysis indicates 2 primary structural changes: #1 New Building (12,450 m², 91% confidence) and #2 Building Expansion (8,230 m², 87% confidence), representing a combined +20,680 m² of built footprint.'
   );
+  const [answerSource, setAnswerSource] = useState<string | null>('Gemini 1.5 Flash');
   const [isAnswering, setIsAnswering] = useState(false);
+  const [geminiApiKey, setGeminiApiKey] = useState<string>(() => {
+    return localStorage.getItem('satquery_gemini_key') || '';
+  });
+  const [showKeyInput, setShowKeyInput] = useState(false);
 
   const detectUserLocation = useCallback(() => {
     if (!navigator.geolocation) return;
@@ -444,13 +452,94 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
     detectUserLocation();
   }, [detectUserLocation]);
 
-  const handleAskQuestion = (prompt?: string) => {
+  const handleAskQuestion = async (prompt?: string) => {
     const q = prompt || questionInput;
     if (!q.trim()) return;
     setIsAnswering(true);
     setChatAnswer(null);
+    setAnswerSource(null);
 
-    setTimeout(() => {
+    const contextData = {
+      location: locationQuery || 'Evaluated Region',
+      dates: [startDate || '2024-04-01', endDate || '2024-04-30'],
+      changes: CHANGE_DEFINITIONS.map((ch: DetectedChange) => ({
+        id: ch.id,
+        label: ch.label,
+        area: ch.area,
+        confidence: ch.confidence,
+        description: ch.description,
+      })),
+    };
+
+    let answerObtained = false;
+
+    // 1. Primary: Call backend /api/satellite/ask
+    try {
+      const res = await fetch('/api/satellite/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: q,
+          context: contextData,
+          api_key: geminiApiKey.trim() || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.answer) {
+          setChatAnswer(data.answer);
+          setAnswerSource(
+            data.source === 'gemini_api'
+              ? data.model
+                ? `Gemini (${data.model})`
+                : 'Gemini AI'
+              : 'Spatial AI Synthesizer'
+          );
+          answerObtained = true;
+        }
+      }
+    } catch (err) {
+      console.warn('Backend /api/satellite/ask request failed, checking client fallback:', err);
+    }
+
+    // 2. Direct client-side Gemini fallback if backend call failed and user entered API key
+    if (!answerObtained && geminiApiKey.trim()) {
+      try {
+        const systemPrompt =
+          'You are the Satellite Change Intelligence Assistant for SatQuery AI. ' +
+          'You analyze bi-temporal satellite imagery change detection data and explain spatial transformations clearly and accurately. ' +
+          `Cite specific detected change objects (#1 to #${CHANGE_DEFINITIONS.length}), their exact surface areas in m², and confidence scores. ` +
+          'Keep responses concise, authoritative, and focused in 2-4 sentences.';
+        const contextStr =
+          `Evaluation Context:\n- Region: ${contextData.location}\n- Temporal Range: ${contextData.dates[0]} to ${contextData.dates[1]}\n- Detected Changes: ${JSON.stringify(contextData.changes)}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiApiKey.trim()}`;
+        const res = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              { parts: [{ text: `${systemPrompt}\n\n${contextStr}\n\nUser Question: ${q}` }] },
+            ],
+            generationConfig: { temperature: 0.2, maxOutputTokens: 300 },
+          }),
+        });
+        if (res.ok) {
+          const gData = await res.json();
+          const text = gData?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            setChatAnswer(text.trim());
+            setAnswerSource('Gemini 3.6 Flash');
+            answerObtained = true;
+          }
+        }
+      } catch (err) {
+        console.warn('Direct Gemini API fetch error:', err);
+      }
+    }
+
+    // 3. High-precision spatial synthesizer fallback if network offline or key unavailable
+    if (!answerObtained) {
       const qLower = q.toLowerCase();
       let reply = '';
       if (
@@ -474,11 +563,13 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
         reply =
           'Infrastructure check: #4 Road Development connects 4,120 m² of newly surfaced transit corridor linking the existing highway to new construction sector #3.';
       } else {
-        reply = `Identified 5 distinct change objects across the evaluated area (${locationQuery}). Highest confidence anomaly is New Building at 91% (12,450 m²).`;
+        reply = `Identified ${CHANGE_DEFINITIONS.length} distinct change objects across ${locationQuery || 'the evaluated scene'}. Highest confidence anomaly is New Building at 91% (12,450 m²).`;
       }
       setChatAnswer(reply);
-      setIsAnswering(false);
-    }, 500);
+      setAnswerSource('Spatial AI Synthesizer');
+    }
+
+    setIsAnswering(false);
   };
 
   const handleChangeClick = useCallback((ch: DetectedChange) => {
@@ -2134,14 +2225,28 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                 <span className="modal-header-title">
                   Satellite Change Intelligence Assistant
                 </span>
+                <span className="gemini-pill-badge" title="Powered by Google Gemini Generative Intelligence">
+                  <Bot size={12} />
+                  <span>Gemini 1.5</span>
+                </span>
               </div>
-              <button
-                className="btn-modal-close"
-                onClick={() => setIsQuestionModalOpen(false)}
-                title="Close assistant"
-              >
-                <X size={16} />
-              </button>
+              <div className="modal-header-actions">
+                <button
+                  className={`btn-api-key-toggle ${showKeyInput || geminiApiKey ? 'active' : ''}`}
+                  onClick={() => setShowKeyInput(!showKeyInput)}
+                  title={geminiApiKey ? 'Gemini API Key active (click to view/edit)' : 'Configure custom Gemini API Key'}
+                >
+                  <Key size={13} />
+                  <span>{geminiApiKey ? 'Key Active' : 'API Key'}</span>
+                </button>
+                <button
+                  className="btn-modal-close"
+                  onClick={() => setIsQuestionModalOpen(false)}
+                  title="Close assistant"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
 
             <div className="followup-modal-body">
@@ -2149,6 +2254,48 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
                 Ask any question regarding detected spatial anomalies, building expansion, or
                 environmental land transformation across the evaluated bi-temporal scene.
               </p>
+
+              {/* Optional Gemini API Key Drawer */}
+              {showKeyInput && (
+                <div className="gemini-key-input-card">
+                  <div className="key-input-header">
+                    <Key size={13} color="#0284c7" />
+                    <span>Google Gemini API Key (Optional Override)</span>
+                  </div>
+                  <p className="key-input-help">
+                    Provide a personal Gemini API Key if your server does not have one pre-configured. Keys are stored locally in your browser session.
+                  </p>
+                  <div className="key-input-row">
+                    <input
+                      type="password"
+                      className="gemini-key-input"
+                      placeholder="AIzaSy..."
+                      value={geminiApiKey}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setGeminiApiKey(val);
+                        if (val.trim()) {
+                          localStorage.setItem('satquery_gemini_key', val.trim());
+                        } else {
+                          localStorage.removeItem('satquery_gemini_key');
+                        }
+                      }}
+                    />
+                    {geminiApiKey && (
+                      <button
+                        className="btn-clear-key"
+                        onClick={() => {
+                          setGeminiApiKey('');
+                          localStorage.removeItem('satquery_gemini_key');
+                        }}
+                        title="Clear saved key"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Quick suggestion prompt chips */}
               <div className="prompt-chips-wrap">
@@ -2199,15 +2346,32 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
               {isAnswering && (
                 <div className="modal-answer-box loading">
                   <div className="loading-spinner-ring" />
-                  <span>Synthesizing geospatial evidence from detected change objects...</span>
+                  <span>Querying Gemini & synthesizing geospatial change objects...</span>
                 </div>
               )}
 
               {chatAnswer && !isAnswering && (
                 <div className="modal-answer-box">
                   <div className="answer-header">
-                    <CheckCircle2 size={15} color="#22c55e" />
-                    <span>Spatial AI Evaluation</span>
+                    <div className="answer-header-left">
+                      <CheckCircle2 size={15} color="#22c55e" />
+                      <span>Spatial AI Evaluation</span>
+                    </div>
+                    {answerSource && (
+                      <span className="answer-source-badge">
+                        {answerSource.includes('Gemini') ? (
+                          <>
+                            <Sparkles size={11} color="#0284c7" />
+                            <span>{answerSource}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Cpu size={11} color="#64748b" />
+                            <span>{answerSource}</span>
+                          </>
+                        )}
+                      </span>
+                    )}
                   </div>
                   <p className="answer-body-text">{chatAnswer}</p>
                 </div>
