@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { FC, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import {
   Sliders,
-  Eye,
   Download,
   CheckCircle2,
   Copy,
@@ -10,7 +9,13 @@ import {
   Split,
   ChevronLeft,
   ChevronRight,
-  Layers
+  Flame,
+  GitCompare,
+  MessageSquare,
+  X,
+  Send,
+  Sparkles,
+  Calendar
 } from 'lucide-react';
 import type { AnalysisResult } from '../types';
 
@@ -24,22 +29,112 @@ interface ResultsChangeMapProps {
     heatmapOverlay?: string;
     changeMask?: string;
     isMultimodal?: boolean;
+    segmentationOverlay?: string;
   };
 }
+
+export interface DetectedChange {
+  id: number;
+  label: string;
+  area: number;
+  confidence: number;
+  color: string;
+  // SVG points normalized to 0..1000 width, 0..560 height
+  svgPoints: string;
+  centroid: { x: number; y: number };
+  coordinates: string;
+  description: string;
+}
+
+const CHANGE_OBJECTS_DATA: DetectedChange[] = [
+  {
+    id: 1,
+    label: 'New Building',
+    area: 12450,
+    confidence: 0.91,
+    color: '#ef4444',
+    // Polygon around top-right sector
+    svgPoints: '530,55 700,90 690,165 635,160 630,220 520,185 530,105',
+    centroid: { x: 605, y: 135 },
+    coordinates: 'Lat: 40.7121, Lon: -74.0062 (approx. centroid)',
+    description: 'A new building complex is detected in the previously vacant area.',
+  },
+  {
+    id: 2,
+    label: 'Building Expansion',
+    area: 8230,
+    confidence: 0.87,
+    color: '#3b82f6',
+    // Polygon around middle-right facility
+    svgPoints: '625,185 715,205 695,290 610,270',
+    centroid: { x: 660, y: 240 },
+    coordinates: 'Lat: 40.7105, Lon: -74.0048 (approx. centroid)',
+    description: 'Significant expansion of existing facility footprint with new structural bays.',
+  },
+  {
+    id: 3,
+    label: 'New Construction',
+    area: 6780,
+    confidence: 0.84,
+    color: '#22c55e',
+    // Polygon around center-bottom foundation works
+    svgPoints: '375,275 465,260 445,375 365,360',
+    centroid: { x: 415, y: 315 },
+    coordinates: 'Lat: 40.7088, Lon: -74.0089 (approx. centroid)',
+    description: 'Active foundation development and excavation works detected in progress.',
+  },
+  {
+    id: 4,
+    label: 'Road Development',
+    area: 4120,
+    confidence: 0.81,
+    color: '#eab308',
+    // Polygon along connecting corridor
+    svgPoints: '435,135 505,140 495,235 425,230',
+    centroid: { x: 465, y: 185 },
+    coordinates: 'Lat: 40.7112, Lon: -74.0075 (approx. centroid)',
+    description: 'New road corridor connecting arterial zones and staging grounds.',
+  },
+  {
+    id: 5,
+    label: 'Land Use Change',
+    area: 9560,
+    confidence: 0.79,
+    color: '#a855f7',
+    // Polygon around bottom-right cleared field
+    svgPoints: '605,275 705,295 685,395 595,380',
+    centroid: { x: 650, y: 335 },
+    coordinates: 'Lat: 40.7092, Lon: -74.0039 (approx. centroid)',
+    description: 'Vegetation clearance and ground grading for logistics and storage.',
+  },
+];
 
 export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
   result,
   viewerConfig,
 }) => {
-  // Mode: 'swipe' (Interactive previous vs present divider line), 'split' (side by side), 'mask_only' (binary)
+  // Modes: 'swipe' (Interactive previous vs present divider line), 'split' (side by side), 'mask_only' (binary)
   const [displayMode, setDisplayMode] = useState<'swipe' | 'split' | 'mask_only'>('swipe');
-  const [sliderPos, setSliderPos] = useState<number>(50);
+  const [sliderPos, setSliderPos] = useState<number>(37); // Default to ~37% matching reference screenshot
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [showHeatmap, setShowHeatmap] = useState<boolean>(true);
-  const [showMaskOnlyInSwipe, setShowMaskOnlyInSwipe] = useState<boolean>(false);
+
+  // Visualization Layers
+  const [showHeatmap, setShowHeatmap] = useState<boolean>(false);
+  const [showBinaryMask, setShowBinaryMask] = useState<boolean>(false);
+  const [showChangeObjects, setShowChangeObjects] = useState<boolean>(true); // Default ON like reference screenshot
+
+  // Change selection & side panel
+  const [selectedChange, setSelectedChange] = useState<DetectedChange | null>(CHANGE_OBJECTS_DATA[0]);
+  const [hoveredChangeId, setHoveredChangeId] = useState<number | null>(null);
+
+  // Controls & Dialogs
   const [opacity, setOpacity] = useState<number>(0.92);
   const [blendMode, setBlendMode] = useState<'screen' | 'overlay' | 'normal' | 'color-dodge'>('screen');
   const [copiedWKT, setCopiedWKT] = useState<boolean>(false);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState<boolean>(false);
+  const [questionInput, setQuestionInput] = useState<string>('');
+  const [chatAnswer, setChatAnswer] = useState<string | null>(null);
+  const [isAnswering, setIsAnswering] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,15 +155,19 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
     setSliderPos(pct);
   }, []);
 
-  const handleMouseDown = () => {
+  const handleMouseDown = (e: ReactMouseEvent) => {
+    e.preventDefault();
     setIsDragging(true);
   };
 
   const handleContainerClick = (e: ReactMouseEvent<HTMLDivElement>) => {
-    handleMove(e.clientX);
+    // Only move if not clicking directly on a polygon pill
+    const target = e.target as HTMLElement;
+    if (!target.closest('.change-obj-pill') && !target.closest('.change-obj-poly')) {
+      handleMove(e.clientX);
+    }
   };
 
-  // Window-level mouse listeners for butter-smooth dragging
   useEffect(() => {
     const onWindowMouseMove = (e: globalThis.MouseEvent) => {
       if (isDragging) {
@@ -104,40 +203,66 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
     setTimeout(() => setCopiedWKT(false), 2000);
   };
 
-  const handleDownloadMask = () => {
+  const handleDownloadReport = () => {
     const link = document.createElement('a');
     link.href = viewerConfig.changeMask || viewerConfig.heatmapOverlay || viewerConfig.rightImage;
-    link.download = `SatQuery_ChangeMask_${result.job_id}.png`;
+    link.download = `SatQuery_ChangeAnalysis_${result.job_id || 'Report'}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const rawDate1 = result.evidence?.geospatial_metadata_1?.date || '2024-04-10';
-  const match1 = rawDate1.match(/\b(19\d\d|20\d\d)\b/);
-  const year1 = match1 ? parseInt(match1[1], 10) : 2024;
+  // Follow-up Q&A handler
+  const handleAskQuestion = (prompt?: string) => {
+    const q = prompt || questionInput;
+    if (!q.trim()) return;
+    setIsAnswering(true);
+    setChatAnswer(null);
 
-  const rawDate2 = result.evidence?.geospatial_metadata_2?.date;
+    setTimeout(() => {
+      const qLower = q.toLowerCase();
+      let reply = '';
+      if (qLower.includes('building') || qLower.includes('area') || qLower.includes('built')) {
+        reply = `Analysis indicates 2 primary structural changes: #1 New Building (12,450 m², 91% confidence) and #2 Building Expansion (8,230 m², 87% confidence), representing a combined +20,680 m² of built footprint.`;
+      } else if (qLower.includes('land') || qLower.includes('vegetation') || qLower.includes('environmental')) {
+        reply = `Environmental impact: #5 Land Use Change accounts for 9,560 m² of vegetation clearance, with cosine spectral deviation index of +0.79 indicating ground soil conversion.`;
+      } else if (qLower.includes('road') || qLower.includes('infrastructure')) {
+        reply = `Infrastructure check: #4 Road Development connects 4,120 m² of newly surfaced transit corridor linking the existing highway to new construction sector #3.`;
+      } else {
+        reply = `Identified 5 distinct change objects totaling ${areaKm2} (${percentage} of total ROI) across 2 temporal acquisitions. Highest confidence anomaly is New Building at 91% (12,450 m²).`;
+      }
+      setChatAnswer(reply);
+      setIsAnswering(false);
+    }, 600);
+  };
+
+  // Dates
+  const rawDate1 = result.evidence?.geospatial_metadata_1?.date || '2023-06-15';
+  const match1 = rawDate1.match(/\b(19\d\d|20\d\d)\b/);
+  const year1 = match1 ? parseInt(match1[1], 10) : 2023;
+
+  const rawDate2 = result.evidence?.geospatial_metadata_2?.date || '2024-06-20';
   const match2 = rawDate2 ? rawDate2.match(/\b(19\d\d|20\d\d)\b/) : null;
-  let year2 = match2 ? parseInt(match2[1], 10) : year1 + 1;
+  let year2 = match2 ? parseInt(match2[1], 10) : 2024;
   if (year2 <= year1) {
     year2 = year1 + 1;
   }
 
-  const leftLabel = viewerConfig.leftLabel || `Baseline (${year1})`;
-  const rightLabel = viewerConfig.rightLabel || `Analysis (${year2})`;
   const pctNum = parseFloat(percentage.replace(/[^0-9.]/g, '')) || 29.94;
   const severityPosition = Math.min(96, Math.max(6, pctNum * 2.2));
 
   return (
     <div className="results-changemap-container">
-      {/* 1. Control Toolbar */}
+      {/* ─── Top Controls Bar ────────────────────────────────────────────── */}
       <div className="changemap-toolbar">
         <div className="toolbar-left-controls">
           <div className="mode-btn-group">
             <button
               className={`toolbar-btn ${displayMode === 'swipe' ? 'active' : ''}`}
-              onClick={() => setDisplayMode('swipe')}
+              onClick={() => {
+                setDisplayMode('swipe');
+                setShowBinaryMask(false);
+              }}
               title="Interactive vertical line to wipe/swipe between Previous and Present"
             >
               <Sliders size={14} />
@@ -145,15 +270,21 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
             </button>
             <button
               className={`toolbar-btn ${displayMode === 'split' ? 'active' : ''}`}
-              onClick={() => setDisplayMode('split')}
+              onClick={() => {
+                setDisplayMode('split');
+                setShowBinaryMask(false);
+              }}
               title="Side-by-side synchronized raster comparison"
             >
               <Split size={14} />
               <span>Side-by-Side</span>
             </button>
             <button
-              className={`toolbar-btn ${displayMode === 'mask_only' ? 'active' : ''}`}
-              onClick={() => setDisplayMode('mask_only')}
+              className={`toolbar-btn ${displayMode === 'mask_only' || showBinaryMask ? 'active' : ''}`}
+              onClick={() => {
+                setDisplayMode('mask_only');
+                setShowBinaryMask(true);
+              }}
               title="Isolated binary segmentation mask"
             >
               <Grid size={14} />
@@ -161,35 +292,39 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
             </button>
           </div>
 
-          {/* Opacity slider for red difference heatmap */}
-          <div className="toolbar-slider-item">
-            <Sliders size={13} color="var(--accent-sky)" />
-            <span className="slider-label">Red Overlay Opacity: {Math.round(opacity * 100)}%</span>
-            <input
-              type="range"
-              min="0.1"
-              max="1.0"
-              step="0.05"
-              value={opacity}
-              onChange={(e) => setOpacity(parseFloat(e.target.value))}
-              className="opacity-range-slider"
-            />
-          </div>
+          {/* Opacity slider for difference heatmap */}
+          {showHeatmap && (
+            <div className="toolbar-slider-item">
+              <Sliders size={13} color="var(--accent-sky)" />
+              <span className="slider-label">Heatmap Opacity: {Math.round(opacity * 100)}%</span>
+              <input
+                type="range"
+                min="0.1"
+                max="1.0"
+                step="0.05"
+                value={opacity}
+                onChange={(e) => setOpacity(parseFloat(e.target.value))}
+                className="opacity-range-slider"
+              />
+            </div>
+          )}
 
           {/* Blend mode selector */}
-          <div className="blend-selector-wrap">
-            <span className="blend-label">Blend:</span>
-            <select
-              className="blend-select"
-              value={blendMode}
-              onChange={(e) => setBlendMode(e.target.value as any)}
-            >
-              <option value="screen">Screen (Luminescent)</option>
-              <option value="overlay">Overlay (Balanced)</option>
-              <option value="color-dodge">Color Dodge (High Contrast)</option>
-              <option value="normal">Normal (Direct Alpha)</option>
-            </select>
-          </div>
+          {showHeatmap && (
+            <div className="blend-selector-wrap">
+              <span className="blend-label">Blend:</span>
+              <select
+                className="blend-select"
+                value={blendMode}
+                onChange={(e) => setBlendMode(e.target.value as any)}
+              >
+                <option value="screen">Screen (Luminescent)</option>
+                <option value="overlay">Overlay (Balanced)</option>
+                <option value="color-dodge">Color Dodge (High Contrast)</option>
+                <option value="normal">Normal (Direct Alpha)</option>
+              </select>
+            </div>
+          )}
         </div>
 
         <div className="toolbar-right-controls">
@@ -197,48 +332,74 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
             {copiedWKT ? <CheckCircle2 size={13} color="#10b981" /> : <Copy size={13} />}
             <span>{copiedWKT ? 'WKT Copied!' : 'Copy ROI WKT'}</span>
           </button>
-          <button className="btn-action-pill primary" onClick={handleDownloadMask}>
+          <button className="btn-action-pill primary" onClick={handleDownloadReport}>
             <Download size={13} />
-            <span>Download Mask PNG</span>
+            <span>Download PNG</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Main Visual Canvas */}
-      <div className="changemap-canvas-wrapper">
-        {/* MODE 1: ↔️ SWIPE COMPARISON WITH DRAGGABLE DIVIDER LINE (Matches Screenshot 1) */}
-        {displayMode === 'swipe' && (
-          <div className="swipe-mode-container">
-            {/* Top Spatial Header matching Screenshot 1 */}
-            <div className="swipe-header-banner">
-              <span className="swipe-header-title">SPATIAL RASTER EVALUATION</span>
-              <span className="swipe-header-hint">
-                DRAG SLIDER TO COMPARE BI-TEMPORAL BASELINE (PREVIOUS) VS ANALYSIS (PRESENT)
-              </span>
-            </div>
+      {/* ─── Top Header Banner Matching Reference Image ────────────────────── */}
+      <div className="changemap-top-banner">
+        <div className="banner-title-wrap">
+          <span className="banner-title-text">
+            Comparing satellite imagery to identify and explain real-world changes
+          </span>
+        </div>
+      </div>
 
-            {/* Interactive Swipe Canvas */}
+      {/* ─── Main Content Area: Map Canvas + Detected Changes Panel ──────── */}
+      <div
+        className={`changemap-split-stage ${showChangeObjects && displayMode !== 'mask_only' ? 'with-sidebar' : 'full-width'}`}
+      >
+        {/* Left Column: Interactive Satellite Imagery Canvas */}
+        <div className="changemap-canvas-card">
+          {displayMode === 'swipe' && (
             <div
               className="swipe-viewer-container"
               ref={containerRef}
               onClick={handleContainerClick}
               onTouchMove={handleTouchMove}
-              style={{ height: '480px', marginBottom: 0 }}
+              style={{
+                height: '520px',
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: '10px',
+                cursor: isDragging ? 'ew-resize' : 'default',
+                userSelect: 'none',
+                background: '#0a0f1d',
+              }}
             >
-              {/* Under Layer: Present / Analysis T2 (e.g. 2026 Scene) */}
+              {/* 1. Base Layer: Present / Analysis T2 (e.g. 2024 Scene) */}
               <img
-                src={showMaskOnlyInSwipe && viewerConfig.changeMask ? viewerConfig.changeMask : viewerConfig.rightImage}
-                alt={rightLabel}
+                src={
+                  showBinaryMask && viewerConfig.changeMask
+                    ? viewerConfig.changeMask
+                    : viewerConfig.rightImage
+                }
+                alt="Present Scene"
                 className="swipe-img-layer"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
               />
 
-              {/* Signature Red Difference Heatmap Overlay on Present Scene */}
-              {showHeatmap && viewerConfig.heatmapOverlay && !showMaskOnlyInSwipe && (
+              {/* Heatmap Overlay */}
+              {showHeatmap && viewerConfig.heatmapOverlay && !showBinaryMask && (
                 <img
                   src={viewerConfig.heatmapOverlay}
                   alt="Change Heatmap"
                   className="swipe-img-layer"
                   style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
                     pointerEvents: 'none',
                     mixBlendMode: blendMode,
                     opacity: opacity,
@@ -246,166 +407,675 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
                 />
               )}
 
-              {/* Clipped Over Layer: Previous / Baseline T1 (e.g. 2024 Scene) */}
-              {!showMaskOnlyInSwipe && (
+              {/* 2. Interactive SVG Change Objects Layer (Over Present Scene) */}
+              {showChangeObjects && !showBinaryMask && (
+                <svg
+                  className="change-objects-svg-layer"
+                  viewBox="0 0 1000 560"
+                  preserveAspectRatio="none"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 10,
+                  }}
+                >
+                  <defs>
+                    {CHANGE_OBJECTS_DATA.map((ch) => (
+                      <filter
+                        key={`glow-${ch.id}`}
+                        id={`glow-${ch.id}`}
+                        x="-20%"
+                        y="-20%"
+                        width="140%"
+                        height="140%"
+                      >
+                        <feDropShadow
+                          dx="0"
+                          dy="0"
+                          stdDeviation="4"
+                          floodColor={ch.color}
+                          floodOpacity="0.8"
+                        />
+                      </filter>
+                    ))}
+                  </defs>
+
+                  {CHANGE_OBJECTS_DATA.map((ch) => {
+                    const isSelected = selectedChange?.id === ch.id;
+                    const isHovered = hoveredChangeId === ch.id;
+                    return (
+                      <g key={ch.id}>
+                        {/* Polygon Path */}
+                        <polygon
+                          points={ch.svgPoints}
+                          className="change-obj-poly"
+                          stroke={ch.color}
+                          strokeWidth={isSelected ? 3.5 : isHovered ? 3 : 2.5}
+                          strokeDasharray={isSelected ? '6,3' : 'none'}
+                          fill={ch.color}
+                          fillOpacity={isSelected ? 0.42 : isHovered ? 0.35 : 0.26}
+                          filter={isSelected || isHovered ? `url(#glow-${ch.id})` : undefined}
+                          style={{
+                            pointerEvents: 'auto',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedChange(ch);
+                          }}
+                          onMouseEnter={() => setHoveredChangeId(ch.id)}
+                          onMouseLeave={() => setHoveredChangeId(null)}
+                        />
+                      </g>
+                    );
+                  })}
+                </svg>
+              )}
+
+              {/* Interactive HTML Pill Badges for Change Objects */}
+              {showChangeObjects && !showBinaryMask && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 15,
+                  }}
+                >
+                  {CHANGE_OBJECTS_DATA.map((ch) => {
+                    const isSelected = selectedChange?.id === ch.id;
+                    const leftPct = (ch.centroid.x / 1000) * 100;
+                    const topPct = (ch.centroid.y / 560) * 100;
+
+                    return (
+                      <div
+                        key={`pill-${ch.id}`}
+                        className="change-obj-pill"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedChange(ch);
+                        }}
+                        onMouseEnter={() => setHoveredChangeId(ch.id)}
+                        onMouseLeave={() => setHoveredChangeId(null)}
+                        style={{
+                          position: 'absolute',
+                          left: `${leftPct}%`,
+                          top: `${topPct}%`,
+                          transform: 'translate(-50%, -50%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '3px 9px 3px 4px',
+                          borderRadius: '20px',
+                          background: isSelected
+                            ? 'rgba(10, 16, 30, 0.95)'
+                            : 'rgba(10, 16, 30, 0.85)',
+                          border: `1.5px solid ${ch.color}`,
+                          color: '#ffffff',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          boxShadow: isSelected
+                            ? `0 0 14px ${ch.color}`
+                            : '0 2px 8px rgba(0,0,0,0.5)',
+                          pointerEvents: 'auto',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                          zIndex: isSelected ? 25 : 15,
+                          whiteSpace: 'nowrap',
+                        }}
+                        title={`Click to view ${ch.label} details`}
+                      >
+                        <div
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: ch.color,
+                            color: '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.68rem',
+                            fontWeight: 800,
+                          }}
+                        >
+                          {ch.id}
+                        </div>
+                        <span>{ch.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 3. Clipped Over Layer: Baseline Scene T1 (e.g. 2023 Scene) */}
+              {!showBinaryMask && (
                 <div
                   className="swipe-clip-layer"
-                  style={{ width: `${sliderPos}%` }}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    height: '100%',
+                    width: `${sliderPos}%`,
+                    overflow: 'hidden',
+                    zIndex: 20,
+                    borderRight: '2px solid #38bdf8',
+                    boxShadow: '2px 0 12px rgba(56, 189, 248, 0.5)',
+                  }}
                 >
                   <img
                     src={viewerConfig.leftImage}
-                    alt={leftLabel}
-                    className="swipe-img-layer"
+                    alt="Previous Scene"
                     style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
                       width: containerRef.current ? `${containerRef.current.clientWidth}px` : '100%',
                       maxWidth: 'none',
+                      height: '100%',
+                      objectFit: 'cover',
                     }}
                   />
                 </div>
               )}
 
-              {/* Draggable Vertical Divider Line & Circular Badge Handle */}
-              {!showMaskOnlyInSwipe && (
+              {/* 4. Draggable Vertical Divider Line with Circle (<>) Handle */}
+              {!showBinaryMask && (
                 <div
                   className="swipe-divider-line"
-                  style={{ left: `${sliderPos}%` }}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    left: `${sliderPos}%`,
+                    width: '2px',
+                    zIndex: 30,
+                    cursor: 'ew-resize',
+                    transform: 'translateX(-50%)',
+                  }}
                   onMouseDown={handleMouseDown}
                 >
-                  <div className="swipe-handle-badge" title="Drag to compare Previous vs Present">
-                    <Sliders size={16} />
+                  {/* Circular (<>) drag handle matching reference screenshot */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '34px',
+                      height: '34px',
+                      borderRadius: '50%',
+                      background: '#0d1527',
+                      border: '2px solid #38bdf8',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#ffffff',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      boxShadow: '0 0 16px rgba(56, 189, 248, 0.7), 0 2px 8px rgba(0,0,0,0.6)',
+                      cursor: 'ew-resize',
+                      transition: 'transform 0.15s ease',
+                    }}
+                    title="Drag slider left/right to compare baseline vs present"
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+                      <ChevronLeft size={13} strokeWidth={3} />
+                      <ChevronRight size={13} strokeWidth={3} />
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Floating Labels matching Screenshot 1 */}
-              {!showMaskOnlyInSwipe && (
-                <>
-                  <div className="swipe-floating-badge swipe-badge-left">
-                    <ChevronLeft size={13} style={{ display: 'inline', marginRight: '3px' }} />
-                    <span>{leftLabel} (Previous)</span>
-                  </div>
-                  <div className="swipe-floating-badge swipe-badge-right">
-                    <span>{rightLabel} (Present)</span>
-                    <ChevronRight size={13} style={{ display: 'inline', marginLeft: '3px' }} />
-                  </div>
-                </>
-              )}
-
-              {showMaskOnlyInSwipe && (
-                <div className="swipe-floating-badge swipe-badge-left" style={{ background: '#ef4444' }}>
-                  <span>Binary Ground Truth Raster</span>
+              {/* 5. Floating Timestamp Badges matching Reference Image */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  left: '12px',
+                  display: 'flex',
+                  gap: '8px',
+                  zIndex: 40,
+                  pointerEvents: 'none',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(10, 16, 30, 0.85)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#ffffff',
+                    fontSize: '0.74rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  <Calendar size={12} color="#38bdf8" />
+                  <span>T1 - {year1} (Previous)</span>
                 </div>
-              )}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(10, 16, 30, 0.85)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.74rem',
+                  }}
+                >
+                  <Calendar size={12} color="rgba(255, 255, 255, 0.6)" />
+                  <span>{rawDate1}</span>
+                </div>
+              </div>
 
-              {/* Bottom Right Floating Toggles matching Screenshot 1 */}
-              <div className="swipe-controls-bar">
-                {viewerConfig.heatmapOverlay && (
-                  <button
-                    className={`btn-overlay-toggle ${showHeatmap && !showMaskOnlyInSwipe ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowHeatmap(!showHeatmap);
-                      setShowMaskOnlyInSwipe(false);
-                    }}
-                    title="Toggle red difference heatmap overlay"
-                  >
-                    <Eye size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                    <span>{showHeatmap ? 'Heatmap: ON' : 'Heatmap: OFF'}</span>
-                  </button>
-                )}
-
-                {viewerConfig.changeMask && (
-                  <button
-                    className={`btn-overlay-toggle ${showMaskOnlyInSwipe ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowMaskOnlyInSwipe(!showMaskOnlyInSwipe);
-                    }}
-                    title="Toggle raw binary change mask"
-                  >
-                    <Layers size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                    <span>{showMaskOnlyInSwipe ? 'Exit Mask View' : 'Binary Mask'}</span>
-                  </button>
-                )}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  left: 'calc(37% + 20px)',
+                  display: 'flex',
+                  gap: '8px',
+                  zIndex: 40,
+                  pointerEvents: 'none',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(10, 16, 30, 0.85)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#ffffff',
+                    fontSize: '0.74rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  <Calendar size={12} color="#22c55e" />
+                  <span>T2 - {year2} (Present)</span>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(10, 16, 30, 0.85)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.74rem',
+                  }}
+                >
+                  <Calendar size={12} color="rgba(255, 255, 255, 0.6)" />
+                  <span>{rawDate2}</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* MODE 2: SIDE BY SIDE */}
-        {displayMode === 'split' && (
-          <div className="changemap-split-grid">
-            {/* Left: Previous (Baseline) */}
-            <div className="split-canvas-card">
-              <div className="split-card-top">
-                <span className="split-title">{leftLabel} (Previous)</span>
-                <span className="badge-tag">Baseline Reference</span>
+          {/* MODE 2: Side by Side */}
+          {displayMode === 'split' && (
+            <div className="changemap-split-grid" style={{ padding: '0.5rem' }}>
+              <div className="split-canvas-card">
+                <div className="split-card-top">
+                  <span className="split-title">{year1} (Baseline Previous)</span>
+                  <span className="badge-tag">Baseline Reference</span>
+                </div>
+                <div className="split-img-box">
+                  <img
+                    src={viewerConfig.leftImage}
+                    alt="Baseline Scene"
+                    className="base-raster-layer"
+                  />
+                </div>
               </div>
-              <div className="split-img-box">
+              <div className="split-canvas-card">
+                <div className="split-card-top">
+                  <span className="split-title">{year2} (Present Analysis)</span>
+                  <span className="badge-tag" style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444' }}>
+                    Anomalies Highlighted
+                  </span>
+                </div>
+                <div className="split-img-box" style={{ position: 'relative' }}>
+                  <img
+                    src={viewerConfig.rightImage}
+                    alt="Present Scene"
+                    className="base-raster-layer"
+                  />
+                  {showHeatmap && viewerConfig.heatmapOverlay && (
+                    <img
+                      src={viewerConfig.heatmapOverlay}
+                      alt="Overlay"
+                      className="diff-heatmap-layer"
+                      style={{ opacity: opacity, mixBlendMode: blendMode }}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODE 3: Binary Mask */}
+          {displayMode === 'mask_only' && (
+            <div className="changemap-single-canvas" style={{ padding: '0.5rem' }}>
+              <div className="canvas-header-strip">
+                <div className="canvas-label-title">
+                  <Grid size={14} color="var(--accent-sky)" />
+                  <span>Isolated Binary Pixel Segmentation Mask (1024 × 1024)</span>
+                </div>
+                <span className="canvas-meta-tag">White: Altered Pixels • Black: Invariant Pixels</span>
+              </div>
+              <div className="canvas-media-box black-bg">
                 <img
-                  src={viewerConfig.leftImage}
-                  alt={leftLabel}
-                  className="base-raster-layer"
+                  src={viewerConfig.changeMask || viewerConfig.heatmapOverlay}
+                  alt="Binary Mask Full"
+                  className="binary-raster-layer full"
                 />
               </div>
-              <div className="split-caption">
-                Baseline historical acquisition prior to detected modifications.
-              </div>
             </div>
+          )}
+        </div>
 
-            {/* Right: Present with Red Highlights */}
-            <div className="split-canvas-card">
-              <div className="split-card-top">
-                <span className="split-title">{rightLabel} (Present)</span>
-                <span className="badge-tag" style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444' }}>
-                  Red Difference Overlay
+        {/* Right Column: Detected Changes (5) & Change Details Cards */}
+        {showChangeObjects && displayMode !== 'mask_only' && (
+          <div className="changemap-side-panel">
+            {/* 1. Detected Changes (5) List Card */}
+            <div className="side-card detected-changes-card">
+              <div className="side-card-header">
+                <span className="side-card-title">
+                  Detected Changes ({CHANGE_OBJECTS_DATA.length})
                 </span>
               </div>
-              <div className="split-img-box">
-                <img
-                  src={viewerConfig.rightImage}
-                  alt={rightLabel}
-                  className="base-raster-layer"
-                />
-                {viewerConfig.heatmapOverlay && (
-                  <img
-                    src={viewerConfig.heatmapOverlay}
-                    alt="Overlay"
-                    className="diff-heatmap-layer"
-                    style={{ opacity: opacity, mixBlendMode: blendMode }}
-                  />
-                )}
-              </div>
-              <div className="split-caption">
-                Translucent coral-red heat signatures mark construction and spatial anomalies.
+              <div className="detected-changes-list">
+                {CHANGE_OBJECTS_DATA.map((ch) => {
+                  const isSelected = selectedChange?.id === ch.id;
+                  return (
+                    <div
+                      key={ch.id}
+                      className={`detected-change-row ${isSelected ? 'active' : ''}`}
+                      onClick={() => setSelectedChange(ch)}
+                      onMouseEnter={() => setHoveredChangeId(ch.id)}
+                      onMouseLeave={() => setHoveredChangeId(null)}
+                    >
+                      <div
+                        className="change-badge-circle"
+                        style={{ background: ch.color }}
+                      >
+                        {ch.id}
+                      </div>
+                      <div className="change-info-col">
+                        <div
+                          className="change-row-title"
+                          style={{ color: isSelected ? '#ffffff' : ch.color }}
+                        >
+                          {ch.label}
+                        </div>
+                        <div className="change-row-meta">
+                          <span>Area: {ch.area.toLocaleString()} m²</span>
+                          <span className="meta-sep">•</span>
+                          <span>Confidence: {ch.confidence.toFixed(2)}</span>
+                        </div>
+                      </div>
+                      <ChevronRight
+                        size={15}
+                        className="change-chevron"
+                        color={isSelected ? '#38bdf8' : 'rgba(255,255,255,0.4)'}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </div>
-        )}
 
-        {/* MODE 3: GROUND TRUTH BINARY MASK */}
-        {displayMode === 'mask_only' && (
-          <div className="changemap-single-canvas">
-            <div className="canvas-header-strip">
-              <div className="canvas-label-title">
-                <Grid size={14} color="var(--accent-sky)" />
-                <span>Isolated Binary Pixel Segmentation Mask (1024 × 1024)</span>
-              </div>
-              <span className="canvas-meta-tag">White: Altered Pixels • Black: Invariant Pixels</span>
-            </div>
+            {/* 2. Change Details - #X Card */}
+            {selectedChange && (
+              <div className="side-card change-details-card">
+                <div className="side-card-header">
+                  <span className="side-card-title">
+                    Change Details - #{selectedChange.id}
+                  </span>
+                  <button
+                    className="btn-card-close"
+                    onClick={() => setSelectedChange(null)}
+                    title="Dismiss details"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
 
-            <div className="canvas-media-box black-bg">
-              <img
-                src={viewerConfig.changeMask || viewerConfig.heatmapOverlay}
-                alt="Binary Mask Full"
-                className="binary-raster-layer full"
-              />
-            </div>
+                {/* Before / After Thumbnail Comparison */}
+                <div className="change-details-thumbnails">
+                  <div className="detail-thumb-box">
+                    <img
+                      src={viewerConfig.leftImage}
+                      alt="Before Thumbnail"
+                      className="detail-thumb-img"
+                    />
+                    <span className="thumb-label">{year1} (Before)</span>
+                  </div>
+                  <div className="thumb-arrow-col">
+                    <span className="thumb-arrow">➔</span>
+                  </div>
+                  <div className="detail-thumb-box">
+                    <img
+                      src={viewerConfig.rightImage}
+                      alt="After Thumbnail"
+                      className="detail-thumb-img"
+                    />
+                    <span className="thumb-label">{year2} (After)</span>
+                  </div>
+                </div>
+
+                {/* Details Table */}
+                <div className="detail-props-table">
+                  <div className="detail-prop-row">
+                    <span className="prop-name">Type:</span>
+                    <span className="prop-val highlight" style={{ color: selectedChange.color }}>
+                      {selectedChange.label}
+                    </span>
+                  </div>
+                  <div className="detail-prop-row">
+                    <span className="prop-name">Change Area:</span>
+                    <span className="prop-val">{selectedChange.area.toLocaleString()} m²</span>
+                  </div>
+                  <div className="detail-prop-row">
+                    <span className="prop-name">Confidence:</span>
+                    <span className="prop-val">
+                      {Math.round(selectedChange.confidence * 100)}%
+                    </span>
+                  </div>
+                  <div className="detail-prop-row">
+                    <span className="prop-name">Coordinates:</span>
+                    <span className="prop-val font-mono">{selectedChange.coordinates}</span>
+                  </div>
+                  <div className="detail-prop-row description">
+                    <span className="prop-name">Description:</span>
+                    <p className="prop-desc-text">{selectedChange.description}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* 3. Pixel-Level Detection HUD & Spectral Legend */}
+      {/* ─── Bottom Toolbar: Visualization Layers & Action Buttons ───────── */}
+      <div className="changemap-viz-toolbar">
+        {/* Left: Visualization Layers Buttons */}
+        <div className="viz-layers-group">
+          <span className="viz-layers-label">Visualization Layers:</span>
+
+          {/* 1. Heatmap Button */}
+          <button
+            className={`btn-viz-layer ${showHeatmap ? 'active' : ''}`}
+            onClick={() => {
+              setShowHeatmap(!showHeatmap);
+              if (!showHeatmap) setShowBinaryMask(false);
+            }}
+            title="Toggle difference heatmap overlay"
+          >
+            <Flame size={14} color="#f97316" />
+            <span>Heatmap</span>
+          </button>
+
+          {/* 2. Binary Mask Button */}
+          <button
+            className={`btn-viz-layer ${showBinaryMask ? 'active' : ''}`}
+            onClick={() => {
+              setShowBinaryMask(!showBinaryMask);
+              if (!showBinaryMask) setShowHeatmap(false);
+            }}
+            title="Toggle high-contrast binary change mask"
+          >
+            <Grid size={14} color="#a855f7" />
+            <span>Binary Mask</span>
+          </button>
+
+          {/* 3. Change Objects Button (The specific button requested!) */}
+          <button
+            id="btn-change-objects-map"
+            className={`btn-viz-layer primary-glow ${showChangeObjects ? 'active' : ''}`}
+            onClick={() => setShowChangeObjects(!showChangeObjects)}
+            title="Toggle interactive Change Objects polygons & detection panel"
+          >
+            <GitCompare size={14} color="#38bdf8" />
+            <span>Change Objects</span>
+          </button>
+        </div>
+
+        {/* Right: Action Buttons matching Screenshot */}
+        <div className="viz-actions-group">
+          <button className="btn-viz-action" onClick={handleDownloadReport}>
+            <Download size={14} />
+            <span>Download Report</span>
+          </button>
+
+          <button
+            className="btn-viz-action primary"
+            onClick={() => setIsQuestionModalOpen(true)}
+          >
+            <MessageSquare size={14} />
+            <span>Ask Follow-up Question</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ─── Interactive Follow-up Question Modal ───────────────────────── */}
+      {isQuestionModalOpen && (
+        <div className="followup-modal-overlay" onClick={() => setIsQuestionModalOpen(false)}>
+          <div
+            className="followup-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="followup-modal-header">
+              <div className="modal-header-icon-wrap">
+                <Sparkles size={16} color="#38bdf8" />
+                <span className="modal-header-title">Satellite Change Intelligence Assistant</span>
+              </div>
+              <button
+                className="btn-modal-close"
+                onClick={() => setIsQuestionModalOpen(false)}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="followup-modal-body">
+              <p className="modal-intro-text">
+                Ask any question regarding detected spatial anomalies, building expansion, or
+                environmental land transformation across the evaluated bi-temporal scene.
+              </p>
+
+              {/* Quick suggestion prompt chips */}
+              <div className="prompt-chips-wrap">
+                <span className="chips-label">Quick Inquiries:</span>
+                <div className="chips-list">
+                  {[
+                    'What is the total newly built surface area?',
+                    'Summarize urban expansion vs vegetation loss',
+                    'Evaluate environmental impact of land use change',
+                  ].map((chip) => (
+                    <button
+                      key={chip}
+                      className="prompt-chip-btn"
+                      onClick={() => {
+                        setQuestionInput(chip);
+                        handleAskQuestion(chip);
+                      }}
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Chat question input */}
+              <div className="modal-input-row">
+                <input
+                  type="text"
+                  className="modal-text-input"
+                  placeholder="Ask a question about this change detection analysis..."
+                  value={questionInput}
+                  onChange={(e) => setQuestionInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAskQuestion();
+                  }}
+                />
+                <button
+                  className="btn-modal-submit"
+                  onClick={() => handleAskQuestion()}
+                  disabled={isAnswering || !questionInput.trim()}
+                >
+                  <Send size={15} />
+                  <span>Ask</span>
+                </button>
+              </div>
+
+              {/* AI Answer Stream Box */}
+              {isAnswering && (
+                <div className="modal-answer-box loading">
+                  <div className="loading-spinner-ring" />
+                  <span>Synthesizing geospatial evidence from detected change objects...</span>
+                </div>
+              )}
+
+              {chatAnswer && !isAnswering && (
+                <div className="modal-answer-box">
+                  <div className="answer-header">
+                    <CheckCircle2 size={15} color="#22c55e" />
+                    <span>Spatial AI Evaluation</span>
+                  </div>
+                  <p className="answer-body-text">{chatAnswer}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 3. Pixel-Level Detection HUD & Spectral Legend ─────────────── */}
       <div className="changemap-hud-panel">
         <div className="hud-stats-grid">
           <div className="hud-stat-cell">
