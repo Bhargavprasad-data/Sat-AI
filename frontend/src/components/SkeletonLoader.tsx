@@ -1,16 +1,20 @@
+import { useState } from 'react';
 import type { FC } from 'react';
-import { RefreshCw, ServerCrash } from 'lucide-react';
+import { RefreshCw, ServerCrash, X } from 'lucide-react';
 
 interface SkeletonLoaderProps {
   isBackendOffline?: boolean;
   onRetry?: () => void;
+  onClose?: () => void;
 }
 
-export const SkeletonLoader: FC<SkeletonLoaderProps> = ({ isBackendOffline, onRetry }) => {
+export const SkeletonLoader: FC<SkeletonLoaderProps> = ({ isBackendOffline, onRetry, onClose }) => {
+  const [isBannerDismissed, setIsBannerDismissed] = useState(false);
+
   return (
     <div className="skeleton-container" aria-busy="true" aria-live="polite">
       {/* Offline Alert Banner if backend is disconnected */}
-      {isBackendOffline && (
+      {isBackendOffline && !isBannerDismissed && (
         <div className="skeleton-offline-banner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <ServerCrash size={18} color="#f87171" className="skeleton-pulse-icon" />
@@ -23,11 +27,36 @@ export const SkeletonLoader: FC<SkeletonLoaderProps> = ({ isBackendOffline, onRe
               </div>
             </div>
           </div>
-          {onRetry && (
-            <button className="btn-secondary" onClick={onRetry} style={{ padding: '0.35rem 0.75rem' }}>
-              <RefreshCw size={13} /> Retry Handshake
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {onRetry && (
+              <button className="btn-secondary" onClick={onRetry} style={{ padding: '0.35rem 0.75rem' }}>
+                <RefreshCw size={13} /> Retry Handshake
+              </button>
+            )}
+            <button
+              className="btn-close-skeleton"
+              onClick={() => {
+                setIsBannerDismissed(true);
+                onClose?.();
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '6px',
+                color: '#cbd5e1',
+                padding: '0.35rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.15s ease',
+              }}
+              title="Close offline notification"
+              aria-label="Close offline notification"
+            >
+              <X size={14} />
             </button>
-          )}
+          </div>
         </div>
       )}
 

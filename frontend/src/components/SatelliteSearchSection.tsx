@@ -375,6 +375,7 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
   );
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [isChangesListOpen, setIsChangesListOpen] = useState(true);
+  const [isVizToolbarOpen, setIsVizToolbarOpen] = useState(true);
 
   // Auto-detect user location when visiting this page
   const [isLocatingUser, setIsLocatingUser] = useState(false);
@@ -1546,91 +1547,147 @@ export const SatelliteSearchSection: FC<SatelliteSearchSectionProps> = ({
             </div>
 
             {/* ─── Visualization Layer Toolbar (pinned to bottom of map) ─── */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '12px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                display: 'flex',
-                gap: '6px',
-                zIndex: 1000,
-                background: 'rgba(10,16,30,0.88)',
-                backdropFilter: 'blur(14px)',
-                borderRadius: '12px',
-                padding: '6px 10px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-              }}
-            >
-              <span
+            {isVizToolbarOpen ? (
+              <div
                 style={{
-                  fontSize: '0.7rem',
-                  color: 'rgba(255,255,255,0.45)',
-                  fontWeight: 700,
-                  marginRight: '4px',
-                  letterSpacing: '0.05em',
+                  position: 'absolute',
+                  bottom: '12px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: '6px',
+                  zIndex: 1000,
+                  background: 'rgba(10,16,30,0.88)',
+                  backdropFilter: 'blur(14px)',
+                  borderRadius: '12px',
+                  padding: '6px 10px',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
                 }}
               >
-                VISUALIZATION LAYERS
-              </span>
-              <button
-                style={layerBtnStyle(vizLayer === 'heatmap', '#f97316')}
-                onClick={() =>
-                  setVizLayer(vizLayer === 'heatmap' ? 'none' : 'heatmap')
-                }
-                title="Toggle Heatmap layer"
-              >
-                <Flame size={14} />
-                Heatmap
-              </button>
-              <button
-                style={layerBtnStyle(vizLayer === 'binary', '#a855f7')}
-                onClick={() =>
-                  setVizLayer(vizLayer === 'binary' ? 'none' : 'binary')
-                }
-                title="Toggle Binary Mask layer"
-              >
-                <Layers size={14} />
-                Binary Mask
-              </button>
-              <button
-                id="btn-change-objects"
-                style={layerBtnStyle(vizLayer === 'changes', '#22c55e')}
-                onClick={() => {
-                  const next =
-                    vizLayer === 'changes' ? 'none' : 'changes';
-                  setVizLayer(next);
-                  if (next === 'none') {
-                    setDetailsOpen(false);
-                    setSelectedChange(null);
-                  } else {
-                    setIsChangesListOpen(true);
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    color: 'rgba(255,255,255,0.45)',
+                    fontWeight: 700,
+                    marginRight: '4px',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  VISUALIZATION LAYERS
+                </span>
+                <button
+                  style={layerBtnStyle(vizLayer === 'heatmap', '#f97316')}
+                  onClick={() =>
+                    setVizLayer(vizLayer === 'heatmap' ? 'none' : 'heatmap')
                   }
-                }}
-                title="Toggle Change Objects overlay"
-              >
-                <GitCompare size={14} />
-                Change Objects
-              </button>
+                  title="Toggle Heatmap layer"
+                >
+                  <Flame size={14} />
+                  Heatmap
+                </button>
+                <button
+                  style={layerBtnStyle(vizLayer === 'binary', '#a855f7')}
+                  onClick={() =>
+                    setVizLayer(vizLayer === 'binary' ? 'none' : 'binary')
+                  }
+                  title="Toggle Binary Mask layer"
+                >
+                  <Layers size={14} />
+                  Binary Mask
+                </button>
+                <button
+                  id="btn-change-objects"
+                  style={layerBtnStyle(vizLayer === 'changes', '#22c55e')}
+                  onClick={() => {
+                    const next =
+                      vizLayer === 'changes' ? 'none' : 'changes';
+                    setVizLayer(next);
+                    if (next === 'none') {
+                      setDetailsOpen(false);
+                      setSelectedChange(null);
+                    } else {
+                      setIsChangesListOpen(true);
+                    }
+                  }}
+                  title="Toggle Change Objects overlay"
+                >
+                  <GitCompare size={14} />
+                  Change Objects
+                </button>
+                <button
+                  id="btn-ask-question-search"
+                  style={{
+                    ...layerBtnStyle(isQuestionModalOpen, '#38bdf8'),
+                    background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    boxShadow: '0 2px 10px rgba(2, 132, 199, 0.4)',
+                  }}
+                  onClick={() => setIsQuestionModalOpen(true)}
+                  title="Ask question about detected changes"
+                >
+                  <MessageSquare size={14} />
+                  Ask Question
+                </button>
+
+                {/* Close / Hide Toolbar button */}
+                <button
+                  id="btn-close-viz-toolbar"
+                  onClick={() => setIsVizToolbarOpen(false)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '6px',
+                    color: 'rgba(255, 255, 255, 0.75)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '5px',
+                    marginLeft: '4px',
+                    transition: 'all 0.15s ease',
+                  }}
+                  title="Close / Hide Visualization Layers Toolbar"
+                  aria-label="Close Visualization Layers Toolbar"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              /* Open / Restore Toolbar button */
               <button
-                id="btn-ask-question-search"
+                id="btn-open-viz-toolbar"
+                onClick={() => setIsVizToolbarOpen(true)}
                 style={{
-                  ...layerBtnStyle(isQuestionModalOpen, '#38bdf8'),
-                  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  boxShadow: '0 2px 10px rgba(2, 132, 199, 0.4)',
+                  position: 'absolute',
+                  bottom: '12px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  zIndex: 1000,
+                  background: 'rgba(10, 16, 30, 0.92)',
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(56, 189, 248, 0.45)',
+                  borderRadius: '20px',
+                  padding: '6px 14px',
+                  color: '#38bdf8',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 18px rgba(0, 0, 0, 0.5)',
+                  transition: 'all 0.2s ease',
                 }}
-                onClick={() => setIsQuestionModalOpen(true)}
-                title="Ask question about detected changes"
+                title="Open Visualization Layers toolbar"
               >
-                <MessageSquare size={14} />
-                Ask Question
+                <Layers size={13} />
+                <span>Visualization Layers</span>
               </button>
-            </div>
+            )}
 
             {/* ─── Open Detected Changes Button (When panel is closed) ─── */}
             {vizLayer === 'changes' && !isChangesListOpen && (
