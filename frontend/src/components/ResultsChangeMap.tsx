@@ -17,7 +17,6 @@ import {
   Sparkles,
   Calendar,
   Bot,
-  Key,
   Cpu
 } from 'lucide-react';
 import type { AnalysisResult } from '../types';
@@ -140,10 +139,7 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
   const [chatAnswer, setChatAnswer] = useState<string | null>(null);
   const [answerSource, setAnswerSource] = useState<string | null>(null);
   const [isAnswering, setIsAnswering] = useState<boolean>(false);
-  const [geminiApiKey, setGeminiApiKey] = useState<string>(() => {
-    return localStorage.getItem('satquery_gemini_key') || '';
-  });
-  const [showKeyInput, setShowKeyInput] = useState<boolean>(false);
+  const geminiApiKey = localStorage.getItem('satquery_gemini_key') || '';
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1130,34 +1126,40 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
           >
             <div className="followup-modal-header">
               <div className="modal-header-icon-wrap">
-                <img
-                  src="/logo.png"
-                  alt="SatQuery AI Logo"
-                  style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: 4 }}
-                />
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#ffffff',
+                    border: '2px solid rgba(56, 189, 248, 0.45)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <img
+                    src="/logo.png"
+                    alt="SatQuery AI Logo"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
                 <span className="modal-header-title">Satellite Change Intelligence Assistant</span>
                 <span className="gemini-pill-badge" title="Powered by Google Gemini Generative Intelligence">
                   <Bot size={12} />
                   <span>Gemini AI</span>
                 </span>
               </div>
-              <div className="modal-header-actions">
-                <button
-                  className={`btn-api-key-toggle ${showKeyInput || geminiApiKey ? 'active' : ''}`}
-                  onClick={() => setShowKeyInput(!showKeyInput)}
-                  title={geminiApiKey ? 'Gemini API Key active (click to view/edit)' : 'Configure custom Gemini API Key'}
-                >
-                  <Key size={13} />
-                  <span>{geminiApiKey ? 'Key Active' : 'API Key'}</span>
-                </button>
-                <button
-                  className="btn-modal-close"
-                  onClick={() => setIsQuestionModalOpen(false)}
-                  title="Close assistant"
-                >
-                  <X size={16} />
-                </button>
-              </div>
+              <button
+                className="btn-modal-close"
+                onClick={() => setIsQuestionModalOpen(false)}
+                title="Close assistant"
+              >
+                <X size={16} />
+              </button>
             </div>
 
             <div className="followup-modal-body">
@@ -1165,48 +1167,6 @@ export const ResultsChangeMap: FC<ResultsChangeMapProps> = ({
                 Ask any question regarding detected spatial anomalies, building expansion, or
                 environmental land transformation across the evaluated bi-temporal scene.
               </p>
-
-              {/* Optional Gemini API Key Drawer */}
-              {showKeyInput && (
-                <div className="gemini-key-input-card">
-                  <div className="key-input-header">
-                    <Key size={13} color="#38bdf8" />
-                    <span>Google Gemini API Key (Optional Override)</span>
-                  </div>
-                  <p className="key-input-help">
-                    Provide a personal Gemini API Key if your server does not have one pre-configured. Keys are stored locally in your browser session.
-                  </p>
-                  <div className="key-input-row">
-                    <input
-                      type="password"
-                      className="gemini-key-input"
-                      placeholder="AIzaSy..."
-                      value={geminiApiKey}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setGeminiApiKey(val);
-                        if (val.trim()) {
-                          localStorage.setItem('satquery_gemini_key', val.trim());
-                        } else {
-                          localStorage.removeItem('satquery_gemini_key');
-                        }
-                      }}
-                    />
-                    {geminiApiKey && (
-                      <button
-                        className="btn-clear-key"
-                        onClick={() => {
-                          setGeminiApiKey('');
-                          localStorage.removeItem('satquery_gemini_key');
-                        }}
-                        title="Clear saved key"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Quick suggestion prompt chips */}
               <div className="prompt-chips-wrap">

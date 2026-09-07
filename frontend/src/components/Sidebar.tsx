@@ -55,11 +55,27 @@ export const Sidebar: FC<SidebarProps> = ({
           style={{ cursor: 'pointer' }}
           title="Return to Analysis Configuration Home"
         >
-          <div className="sidebar-logo-square" style={{ padding: '2px', background: 'transparent' }}>
+          <div
+            className="sidebar-logo-square"
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#ffffff',
+              border: '2px solid rgba(56, 189, 248, 0.45)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+              flexShrink: 0,
+              padding: 0,
+            }}
+          >
             <img
               src="/logo.png"
               alt="SatQuery AI Logo"
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>
 

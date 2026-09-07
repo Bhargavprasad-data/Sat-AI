@@ -18,8 +18,28 @@ export const Navbar: FC<NavbarProps> = ({
     <header className="header-bar">
       <div className="header-inner">
         <div className="brand-section">
-          <div className="brand-logo-badge" style={{ padding: '3px', background: 'transparent' }}>
-            <img src="/logo.png" alt="SatQuery AI Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+          <div
+            className="brand-logo-badge"
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#ffffff',
+              border: '2px solid rgba(56, 189, 248, 0.45)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+              flexShrink: 0,
+              padding: 0,
+            }}
+          >
+            <img
+              src="/logo.png"
+              alt="SatQuery AI Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
           </div>
           <div>
             <div className="brand-title">

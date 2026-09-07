@@ -223,11 +223,25 @@ export const ResultsReport: FC<ResultsReportProps> = ({ result, viewerConfig }) 
         {/* Document Header with Logo & Formal Metadata Box */}
         <div className="dossier-header-grid">
           <div className="dossier-branding">
-            <div className="dossier-logo-badge" style={{ background: 'transparent', padding: 0 }}>
+            <div
+              className="dossier-logo-badge"
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                background: '#ffffff',
+                border: '2px solid rgba(56, 189, 248, 0.45)',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <img
                 src="/logo.png"
                 alt="SatQuery AI Logo"
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
             <div className="dossier-org-text">
