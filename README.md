@@ -255,8 +255,6 @@ Sat-AI/
 ├── requirements.txt                # Root Python dependencies
 └── README.md                       # Documentation
 ```
-
 ---
-
 ## 📄 License
 Distributed under the **MIT License**.
