@@ -7,7 +7,7 @@
 [![STAC API](https://img.shields.io/badge/STAC%20Catalogue-AWS%20Earth%20Search-FF9900.svg?logo=amazon-aws&logoColor=white)](https://earth-search.aws.element84.com/v1)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](#license)
 
-**SatQuery AI** is an autonomous geospatial intelligence system engineered for multi-sensor satellite imagery analysis. It ingests optical multispectral imagery (Sentinel-2 MSI) and synthetic aperture radar (SAR Sentinel-1 GRD) rasters, dynamically extracts authentic GeoTIFF metadata (CRS, resolution, acquisition date, and spectral bands), and executes grounded remote sensing workflows with natural language querying.
+**SatQuery AI** is an autonomous geospatial intelligence system engineered for multi-sensor satellite imagery analysis. It ingests optical multispectral imagery (Sentinel-2 MSI) and synthetic aperture radar (SAR Sentinel-1 GRD) rasters, dynamically extracts authentic GeoTIFF metadata (CRS, resolution, acquisition date, and spectral bands), and executes grounded remote sensing workflows with natural language querying.         
 
 It features **Automatic Satellite Data Retrieval** from open STAC catalogs (AWS Earth Search / Element 84), an interactive Leaflet map with geocoding, bi-temporal change detection with swipe-comparison heatmaps, and a modern design supporting both **Dark and Light modes**.
 
